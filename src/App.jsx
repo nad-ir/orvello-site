@@ -292,6 +292,182 @@ function FaqAccordion() {
   );
 }
 
+function PricingCalculator() {
+  const [service, setService] = useState(null);
+  const [bedrooms, setBedrooms] = useState(null);
+  const [quantity, setQuantity] = useState(null);
+
+  const epcOptions = [
+    { key: "1-2", label: "1–2 bed" },
+    { key: "3", label: "3 bed" },
+    { key: "4", label: "4 bed" },
+    { key: "5+", label: "5+ bed" },
+  ];
+  const epcPrices = { "1-2": 75, "3": 85, "4": 95, "5+": 110 };
+
+  const retrofitOptions = [
+    { key: "1", label: "1" },
+    { key: "2-10", label: "2–10" },
+    { key: "11-50", label: "11–50" },
+    { key: "50+", label: "50+" },
+  ];
+  const retrofitPrices = { "1": 200, "2-10": 180, "11-50": 160, "50+": "Quote" };
+
+  const getPrice = () => {
+    if (service === "epc" && bedrooms) return `£${epcPrices[bedrooms]}`;
+    if (service === "retrofit" && quantity) {
+      const p = retrofitPrices[quantity];
+      return typeof p === "number" ? `£${p}` : p;
+    }
+    return null;
+  };
+
+  const getLink = () => {
+    if (service === "epc") return "https://tally.so/r/Gx0jJj";
+    if (service === "retrofit") return "https://tally.so/r/LZ0qVJ";
+    return null;
+  };
+
+  const price = getPrice();
+  const isQuote = price === "Quote";
+
+  const pillStyle = (active) => ({
+    padding: "14px 0",
+    background: active ? "white" : "rgba(255,255,255,0.08)",
+    color: active ? "var(--sage-deep)" : "rgba(255,255,255,0.7)",
+    border: active ? "1.5px solid white" : "1.5px solid rgba(255,255,255,0.15)",
+    fontWeight: active ? 600 : 400,
+    fontSize: 14,
+    cursor: "pointer",
+    transition: "all 0.25s",
+    fontFamily: "inherit",
+    letterSpacing: "0.01em",
+    textAlign: "center",
+    flex: 1,
+    minWidth: 0,
+  });
+
+  return (
+    <div style={{
+      background: "rgba(0,0,0,0.15)",
+      backdropFilter: "blur(8px)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      padding: "clamp(28px, 4vw, 44px)",
+    }}>
+      {/* Step 1: Service */}
+      <div style={{ marginBottom: 28 }}>
+        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>
+          1. What do you need?
+        </label>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button style={pillStyle(service === "epc")} onClick={() => { setService("epc"); setBedrooms(null); setQuantity(null); }}>Domestic EPC</button>
+          <button style={pillStyle(service === "retrofit")} onClick={() => { setService("retrofit"); setBedrooms(null); setQuantity(null); }}>Retrofit Assessment</button>
+          <button style={pillStyle(service === "cdm")} onClick={() => { setService("cdm"); setBedrooms(null); setQuantity(null); }}>CDM / Fire Risk</button>
+        </div>
+      </div>
+
+      {/* Step 2: Conditional */}
+      {service === "epc" && (
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>
+            2. How many bedrooms?
+          </label>
+          <div style={{ display: "flex", gap: 10 }}>
+            {epcOptions.map((opt) => (
+              <button key={opt.key} style={pillStyle(bedrooms === opt.key)} onClick={() => setBedrooms(opt.key)}>{opt.label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {service === "retrofit" && (
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>
+            2. How many properties?
+          </label>
+          <div style={{ display: "flex", gap: 10 }}>
+            {retrofitOptions.map((opt) => (
+              <button key={opt.key} style={pillStyle(quantity === opt.key)} onClick={() => setQuantity(opt.key)}>{opt.label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {service === "cdm" && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{
+            padding: "16px 22px",
+            background: "rgba(200,107,60,0.1)",
+            border: "1px solid rgba(200,107,60,0.2)",
+            fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 300, lineHeight: 1.6,
+          }}>
+            CDM and fire risk services are coming soon. Get in touch and we'll scope your requirements within 48 hours.
+          </div>
+        </div>
+      )}
+
+      {/* Result */}
+      {price && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 0 0", borderTop: "1px solid rgba(255,255,255,0.1)",
+          flexWrap: "wrap", gap: 16,
+        }}>
+          <div>
+            <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>
+              {isQuote ? "Bespoke pricing" : "Your price"}
+            </span>
+            <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 36, color: "white", marginTop: 4 }}>
+              {isQuote ? "Get a quote" : price}
+            </div>
+            {!isQuote && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+              {service === "retrofit" ? "per property · inc. survey & report" : "inc. visit, lodgement & digital delivery"}
+            </span>}
+          </div>
+          <a
+            href={isQuote ? "#contact" : getLink()}
+            target={isQuote ? "_self" : "_blank"}
+            rel="noopener noreferrer"
+            onClick={isQuote ? (e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); } : undefined}
+            style={{
+              background: "white", color: "var(--sage-deep)", border: "none",
+              padding: "16px 32px", fontSize: 14, fontWeight: 700,
+              letterSpacing: "0.05em", textTransform: "uppercase",
+              textDecoration: "none", cursor: "pointer",
+              transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
+              display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "inherit",
+            }}
+          >
+            {isQuote ? "Speak to us" : "Book now"}
+            <ArrowRight size={16} />
+          </a>
+        </div>
+      )}
+
+      {service === "cdm" && (
+        <div style={{
+          display: "flex", justifyContent: "flex-end",
+          paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 0,
+        }}>
+          <button
+            onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+            style={{
+              background: "white", color: "var(--sage-deep)", border: "none",
+              padding: "16px 32px", fontSize: 14, fontWeight: 700,
+              letterSpacing: "0.05em", textTransform: "uppercase",
+              cursor: "pointer", transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
+              display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "inherit",
+            }}
+          >
+            Speak to us
+            <ArrowRight size={16} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OrvelloSite() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeService, setActiveService] = useState(0);
@@ -324,8 +500,8 @@ export default function OrvelloSite() {
           --sage-deep: #3A4B3E;
           --sage-light: #E4EAE5;
           --sage-mid: #7A9580;
-          --warm: #C4A882;
-          --warm-light: #F0E8DC;
+          --warm: #C86B3C;
+          --warm-light: #FAEEE6;
           --border: #DDDBD5;
           --text-secondary: #6B6B66;
           --cream: #EDEBD6;
@@ -616,7 +792,7 @@ export default function OrvelloSite() {
         <div style={{
           position: "absolute", top: "30%", left: "-8%",
           width: 500, height: 500, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(196,168,130,0.2) 0%, rgba(196,168,130,0.05) 50%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(200,107,60,0.2) 0%, rgba(200,107,60,0.05) 50%, transparent 70%)",
           animation: "float2 10s ease-in-out infinite",
           filter: "blur(35px)",
           pointerEvents: "none",
@@ -643,7 +819,7 @@ export default function OrvelloSite() {
         <div style={{
           position: "absolute", bottom: "10%", left: "10%",
           width: 350, height: 350, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(196,168,130,0.14) 0%, transparent 60%)",
+          background: "radial-gradient(circle, rgba(200,107,60,0.14) 0%, transparent 60%)",
           animation: "float5 9s ease-in-out infinite",
           filter: "blur(30px)",
           pointerEvents: "none",
@@ -1035,19 +1211,19 @@ export default function OrvelloSite() {
           <FadeIn>
             <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-              Why Orvello
+              Why choose Orvello
             </p>
             <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 56 }}>
-              Credentials &amp; approach
+              Why choose <span style={{ fontStyle: "italic" }}>Orvello?</span>
             </h2>
           </FadeIn>
 
           <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, alignItems: "stretch" }}>
             {[
-              { title: "Qualified", icon: <Award size={22} />, accent: "var(--sage)", desc: "BEng Civil Engineering with postgraduate qualifications in safety management and energy assessment.", stat: "BEng + MSc", statLabel: "Qualified" },
-              { title: "Regulated", icon: <Shield size={22} />, accent: "var(--sage-mid)", desc: "Professionally insured with PI and public liability cover. Registered with relevant industry bodies.", stat: "PI + PL", statLabel: "Insured" },
-              { title: "Thorough", icon: <FileCheck size={22} />, accent: "var(--warm)", desc: "Every report is produced to a consistent standard with clear findings, practical recommendations, and full regulatory referencing.", stat: "100%", statLabel: "Compliance" },
-              { title: "Responsive", icon: <Zap size={22} />, accent: "#6B8F71", desc: "Same-week availability for EPCs and retrofit assessments. CDM and fire risk work scoped and quoted within 48 hours.", stat: "48hr", statLabel: "Turnaround" },
+              { title: "Qualified & Specialist", icon: <Award size={22} />, accent: "var(--sage)", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment, building performance, and compliance.", stat: "BEng + MSc", statLabel: "Qualified" },
+              { title: "Fully Insured & Compliant", icon: <Shield size={22} />, accent: "var(--sage-mid)", desc: "Professionally insured (PI & Public Liability) and operating in line with industry regulations and standards.", stat: "PI + PL", statLabel: "Covered" },
+              { title: "Clear, Actionable Reports", icon: <FileCheck size={22} />, accent: "var(--warm)", desc: "No generic outputs. Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%", statLabel: "Compliance" },
+              { title: "Fast & Reliable", icon: <Zap size={22} />, accent: "#6B8F71", desc: "Same-week EPC availability with rapid turnaround. Retrofit and consultancy work scoped within 48 hours.", stat: "48hr", statLabel: "Response" },
             ].map((card, i) => (
               <FadeIn key={i} delay={i * 0.1} style={{ display: "flex" }}>
                 <div className="credential-card-v2" style={{
@@ -1063,49 +1239,27 @@ export default function OrvelloSite() {
                   flexDirection: "column",
                   width: "100%",
                 }}>
-                  {/* Top accent bar */}
                   <div style={{ height: 3, background: card.accent, transition: "height 0.3s", flexShrink: 0 }} />
-                  
                   <div style={{ padding: "28px 28px 32px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    {/* Icon + number row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                       <div style={{
                         width: 48, height: 48,
                         background: `${card.accent}12`,
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        color: card.accent,
-                        borderRadius: 4,
-                      }}>
-                        {card.icon}
-                      </div>
+                        color: card.accent, borderRadius: 4,
+                      }}>{card.icon}</div>
                       <span style={{
-                        fontFamily: "'Instrument Serif', serif",
-                        fontSize: 36,
-                        color: "var(--border)",
-                        fontStyle: "italic",
-                        lineHeight: 1,
-                      }}>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
+                        fontFamily: "'Instrument Serif', serif", fontSize: 36,
+                        color: "var(--border)", fontStyle: "italic", lineHeight: 1,
+                      }}>{String(i + 1).padStart(2, "0")}</span>
                     </div>
-                    
-                    {/* Title */}
-                    <h3 style={{ fontSize: 19, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em", color: "var(--ink)" }}>{card.title}</h3>
-                    
-                    {/* Description */}
+                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em", color: "var(--ink)" }}>{card.title}</h3>
                     <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 20, flex: 1 }}>{card.desc}</p>
-                    
-                    {/* Bottom stat chip */}
                     <div style={{
                       display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "6px 14px",
-                      background: `${card.accent}10`,
-                      border: `1px solid ${card.accent}25`,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      letterSpacing: "0.04em",
-                      color: card.accent,
-                      alignSelf: "flex-start",
+                      padding: "6px 14px", background: `${card.accent}10`,
+                      border: `1px solid ${card.accent}25`, fontSize: 12,
+                      fontWeight: 600, letterSpacing: "0.04em", color: card.accent, alignSelf: "flex-start",
                     }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{card.stat}</span>
                       <span style={{ opacity: 0.7, textTransform: "uppercase", fontSize: 10 }}>{card.statLabel}</span>
@@ -1115,6 +1269,40 @@ export default function OrvelloSite() {
               </FadeIn>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* PRICING CALCULATOR CTA */}
+      <section style={{
+        padding: "80px clamp(20px, 4vw, 64px)",
+        background: "linear-gradient(170deg, var(--sage) 0%, var(--sage-deep) 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+          background: "radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 60%)",
+          pointerEvents: "none",
+        }} />
+        <div style={{ maxWidth: 900, margin: "0 auto", position: "relative" }}>
+          <FadeIn>
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <h2 style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontSize: "clamp(28px, 4vw, 40px)",
+                fontWeight: 400, color: "white",
+                letterSpacing: "-0.015em", marginBottom: 12,
+              }}>
+                Ready to book your assessment?
+              </h2>
+              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", fontWeight: 300 }}>
+                Get your quote in under 60 seconds.
+              </p>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.1}>
+            <PricingCalculator />
+          </FadeIn>
         </div>
       </section>
 
