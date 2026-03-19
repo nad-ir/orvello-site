@@ -398,13 +398,17 @@ export default function OrvelloSite() {
           .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
           .grid-2 { grid-template-columns: 1fr !important; }
           .grid-3 { grid-template-columns: 1fr !important; }
-          .grid-4 { grid-template-columns: 1fr 1fr !important; }
+          .grid-4 { grid-template-columns: 1fr !important; }
           .service-detail-grid { grid-template-columns: 1fr !important; }
+          .service-detail-grid > div:last-child { padding: 24px 0 0 0 !important; }
           .hero-buttons { flex-direction: column !important; align-items: stretch !important; }
           .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
           .stat-pills { flex-wrap: wrap !important; }
-          .intro-grid { grid-template-columns: 1fr !important; }
+          .intro-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
           .hero-pad { padding: 140px 20px 80px !important; }
+          .booking-banner-grid { flex-direction: column !important; align-items: flex-start !important; }
+          .booking-banner-grid > div:last-child { width: 100% !important; flex-direction: column !important; }
+          .booking-banner-grid > div:last-child > a { width: 100% !important; text-align: center !important; justify-content: center !important; }
         }
       `}</style>
 
@@ -664,7 +668,7 @@ export default function OrvelloSite() {
               </p>
             </div>
             <div style={{ display: "flex", gap: 12, flexShrink: 0, flexWrap: "wrap" }}>
-              <a href="#book" style={{
+              <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" style={{
                 background: "white",
                 color: "var(--sage-deep)",
                 border: "none",
@@ -687,7 +691,7 @@ export default function OrvelloSite() {
                 Book an EPC
                 <ArrowRight size={16} />
               </a>
-              <a href="#book" style={{
+              <a href="https://tally.so/r/LZ0qVJ" target="_blank" rel="noopener noreferrer" style={{
                 background: "transparent",
                 color: "white",
                 border: "1.5px solid rgba(255,255,255,0.4)",
@@ -836,7 +840,7 @@ export default function OrvelloSite() {
                 </div>
                 <div style={{ marginTop: 36, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                   {SERVICES[activeService].bookable ? (
-                    <a href="#book" className="btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 10 }}>
+                    <a href={SERVICES[activeService].id === "epc" ? "https://tally.so/r/Gx0jJj" : "https://tally.so/r/LZ0qVJ"} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 10 }}>
                       Book now
                       <ArrowRight size={15} />
                     </a>
@@ -935,14 +939,14 @@ export default function OrvelloSite() {
             </h2>
           </FadeIn>
 
-          <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+          <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, alignItems: "stretch" }}>
             {[
               { title: "Qualified", icon: <Award size={22} />, accent: "var(--sage)", desc: "BEng Civil Engineering with postgraduate qualifications in safety management and energy assessment.", stat: "BEng + MSc", statLabel: "Qualified" },
               { title: "Regulated", icon: <Shield size={22} />, accent: "var(--sage-mid)", desc: "Professionally insured with PI and public liability cover. Registered with relevant industry bodies.", stat: "PI + PL", statLabel: "Insured" },
               { title: "Thorough", icon: <FileCheck size={22} />, accent: "var(--warm)", desc: "Every report is produced to a consistent standard with clear findings, practical recommendations, and full regulatory referencing.", stat: "100%", statLabel: "Compliance" },
               { title: "Responsive", icon: <Zap size={22} />, accent: "#6B8F71", desc: "Same-week availability for EPCs and retrofit assessments. CDM and fire risk work scoped and quoted within 48 hours.", stat: "48hr", statLabel: "Turnaround" },
             ].map((card, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
+              <FadeIn key={i} delay={i * 0.1} style={{ display: "flex" }}>
                 <div className="credential-card-v2" style={{
                   padding: 0,
                   background: "rgba(255,255,255,0.5)",
@@ -952,11 +956,14 @@ export default function OrvelloSite() {
                   transition: "all 0.4s cubic-bezier(.16,1,.3,1)",
                   cursor: "default",
                   position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
                 }}>
                   {/* Top accent bar */}
-                  <div style={{ height: 3, background: card.accent, transition: "height 0.3s" }} />
+                  <div style={{ height: 3, background: card.accent, transition: "height 0.3s", flexShrink: 0 }} />
                   
-                  <div style={{ padding: "28px 28px 32px" }}>
+                  <div style={{ padding: "28px 28px 32px", display: "flex", flexDirection: "column", flex: 1 }}>
                     {/* Icon + number row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                       <div style={{
@@ -983,7 +990,7 @@ export default function OrvelloSite() {
                     <h3 style={{ fontSize: 19, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em", color: "var(--ink)" }}>{card.title}</h3>
                     
                     {/* Description */}
-                    <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 20 }}>{card.desc}</p>
+                    <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 20, flex: 1 }}>{card.desc}</p>
                     
                     {/* Bottom stat chip */}
                     <div style={{
@@ -995,6 +1002,7 @@ export default function OrvelloSite() {
                       fontWeight: 600,
                       letterSpacing: "0.04em",
                       color: card.accent,
+                      alignSelf: "flex-start",
                     }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{card.stat}</span>
                       <span style={{ opacity: 0.7, textTransform: "uppercase", fontSize: 10 }}>{card.statLabel}</span>
