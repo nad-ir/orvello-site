@@ -213,7 +213,7 @@ const FAQ_DATA = [
   },
   {
     q: "Do you offer bulk or portfolio pricing?",
-    a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Get in touch with your requirements and we'll provide a tailored quote.",
+    a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Request a quote with your requirements and we'll provide tailored pricing.",
   },
   {
     q: "How do I book an assessment?",
@@ -401,7 +401,7 @@ function PricingCalculator() {
             border: "1px solid rgba(200,107,60,0.2)",
             fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 300, lineHeight: 1.6,
           }}>
-            CDM and fire risk services are coming soon. Get in touch and we'll scope your requirements within 48 hours.
+            CDM and fire risk services are available soon. Register your interest and we'll scope your requirements within 48 hours.
           </div>
         </div>
       )}
@@ -438,9 +438,10 @@ function PricingCalculator() {
               display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "inherit",
             }}
           >
-            {isQuote ? "Speak to us" : "Book now"}
+            {isQuote ? "Speak to us" : "Continue booking"}
             <ArrowRight size={16} />
           </a>
+          {!isQuote && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 8, width: "100%", textAlign: "right" }}>Takes less than 1 minute · No commitment</p>}
         </div>
       )}
 
@@ -459,9 +460,10 @@ function PricingCalculator() {
               display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "inherit",
             }}
           >
-            Speak to us
+            Register interest
             <ArrowRight size={16} />
           </button>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 8, width: "100%", textAlign: "right" }}>We'll respond within 48 hours</p>
         </div>
       )}
     </div>
@@ -537,7 +539,7 @@ export default function OrvelloSite() {
           position: relative;
           overflow: hidden;
         }
-        .btn-primary:hover { background: var(--sage-deep); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,93,79,0.2); }
+        .btn-primary:hover { background: var(--sage-deep); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,107,60,0.25); }
 
         .btn-outline {
           background: transparent;
@@ -552,7 +554,7 @@ export default function OrvelloSite() {
           font-family: inherit;
           text-transform: uppercase;
         }
-        .btn-outline:hover { background: var(--sage); color: var(--chalk); transform: translateY(-2px); }
+        .btn-outline:hover { background: var(--sage); color: var(--chalk); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,107,60,0.15); }
 
         .service-tab {
           padding: 18px 24px;
@@ -709,6 +711,16 @@ export default function OrvelloSite() {
             <button className="nav-link" onClick={() => scrollTo("about")}>About</button>
             <button className="nav-link" onClick={() => scrollTo("credentials")}>Credentials</button>
             <button className="nav-link" onClick={() => scrollTo("contact")}>Contact</button>
+            <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" style={{
+              background: "var(--sage)", color: "white", border: "none",
+              padding: "8px 18px", fontSize: 12, fontWeight: 600,
+              letterSpacing: "0.05em", textTransform: "uppercase",
+              textDecoration: "none", cursor: "pointer",
+              transition: "all 0.3s", fontFamily: "inherit",
+            }}
+              onMouseEnter={(e) => { e.target.style.background = "var(--sage-deep)"; e.target.style.boxShadow = "0 4px 12px rgba(200,107,60,0.2)"; }}
+              onMouseLeave={(e) => { e.target.style.background = "var(--sage)"; e.target.style.boxShadow = "none"; }}
+            >Book EPC</a>
           </div>
           <button className="hamburger" onClick={() => setMenuOpen(true)}>
             <span /><span /><span />
@@ -869,8 +881,8 @@ export default function OrvelloSite() {
           </FadeIn>
           <FadeIn delay={0.3}>
             <div className="hero-buttons" style={{ display: "flex", gap: 16, marginTop: 48 }}>
-              <button className="btn-primary" onClick={() => scrollTo("contact")}>Get in touch</button>
-              <button className="btn-outline" onClick={() => scrollTo("services")}>Our services</button>
+              <button className="btn-primary" onClick={() => scrollTo("book")}>Get instant price</button>
+              <button className="btn-outline" onClick={() => scrollTo("services")}>View services</button>
             </div>
           </FadeIn>
           <FadeIn delay={0.4}>
@@ -879,6 +891,16 @@ export default function OrvelloSite() {
                 <div className="stat-pill" key={label}>
                   <span className="dot" />
                   {label}
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.5}>
+            <div style={{ display: "flex", gap: 24, marginTop: 32, flexWrap: "wrap" }}>
+              {["Same-week availability", "From £75", "Fully insured"].map((item) => (
+                <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)", fontWeight: 400 }}>
+                  <span style={{ color: "var(--warm)", fontSize: 14, fontWeight: 700 }}>✔</span>
+                  {item}
                 </div>
               ))}
             </div>
@@ -900,7 +922,7 @@ export default function OrvelloSite() {
       </div>
 
       {/* BOOKING BANNER */}
-      <section id="book" style={{
+      <section style={{
         background: "linear-gradient(135deg, var(--sage) 0%, var(--sage-deep) 100%)",
         padding: "56px clamp(20px, 4vw, 64px)",
         position: "relative",
@@ -940,10 +962,10 @@ export default function OrvelloSite() {
                 lineHeight: 1.2,
                 marginBottom: 10,
               }}>
-                Book your EPC or Retrofit Assessment
+                Get your EPC or Retrofit quote in 60 seconds
               </h2>
               <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", fontWeight: 300, lineHeight: 1.6, maxWidth: 500 }}>
-                Same-week availability across Northamptonshire. Competitive rates from £75 for domestic EPCs and £160 for batch retrofit assessments.
+                Instant pricing. Flexible appointments. Same-week availability.
               </p>
             </div>
             <div style={{ display: "flex", gap: 12, flexShrink: 0, flexWrap: "wrap" }}>
@@ -1135,7 +1157,7 @@ export default function OrvelloSite() {
                         color: "#8B7355",
                       }}>
                         <Clock size={14} />
-                        Coming soon — currently in qualification
+                        Available soon — register your interest now
                       </div>
                       <button className="btn-outline" onClick={() => scrollTo("contact")} style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
                         Register interest
@@ -1273,7 +1295,7 @@ export default function OrvelloSite() {
       </section>
 
       {/* PRICING CALCULATOR CTA */}
-      <section style={{
+      <section id="book" style={{
         padding: "80px clamp(20px, 4vw, 64px)",
         background: "linear-gradient(170deg, var(--sage) 0%, var(--sage-deep) 100%)",
         position: "relative",
@@ -1319,7 +1341,7 @@ export default function OrvelloSite() {
                 Common<br />questions
               </h2>
               <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-secondary)", fontWeight: 300 }}>
-                Can't find what you're looking for? Get in touch and we'll get back to you within one working day.
+                Can't find your answer? Request a quote or ask us anything — we respond within 24 hours.
               </p>
             </FadeIn>
             <FadeIn delay={0.1}>
@@ -1347,13 +1369,13 @@ export default function OrvelloSite() {
             <FadeIn>
               <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.35, fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ display: "inline-block", width: 28, height: 1, background: "rgba(255,255,255,0.25)" }} />
-                Get in touch
+                Request a quote
               </p>
               <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.015em", lineHeight: 1.15, marginBottom: 28 }}>
-                Let's discuss<br />your <span style={{ fontStyle: "italic" }}>project.</span>
+                Tell us what<br />you <span style={{ fontStyle: "italic" }}>need.</span>
               </h2>
               <p style={{ fontSize: 16, lineHeight: 1.8, opacity: 0.55, fontWeight: 300, maxWidth: 440, marginBottom: 48 }}>
-                Whether you have a specific requirement or want to explore how we can support your next project, get in touch and we'll respond within one working day.
+                Describe your project or requirement and we'll come back with a clear scope and quote within 24 hours. No obligation.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 {[
@@ -1474,10 +1496,10 @@ export default function OrvelloSite() {
                           cursor: (sending || !formState.name || !formState.email) ? "not-allowed" : "pointer",
                         }}
                       >
-                        {sending ? "Sending..." : "Send enquiry"}
+                        {sending ? "Sending..." : "Request a quote"}
                       </button>
                       <p style={{ fontSize: 12, opacity: 0.3, textAlign: "center", marginTop: 4 }}>
-                        We typically respond within one working day.
+                        We typically respond within 24 hours · No obligation
                       </p>
                     </div>
                   );
