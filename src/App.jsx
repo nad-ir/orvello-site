@@ -802,11 +802,11 @@ export default function OrvelloSite() {
         }} />
         {/* Warm orb - mid left */}
         <div style={{
-          position: "absolute", top: "30%", left: "-8%",
-          width: 500, height: 500, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,107,60,0.2) 0%, rgba(200,107,60,0.05) 50%, transparent 70%)",
+          position: "absolute", top: "20%", left: "-5%",
+          width: 600, height: 600, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(200,107,60,0.3) 0%, rgba(200,107,60,0.1) 40%, transparent 70%)",
           animation: "float2 10s ease-in-out infinite",
-          filter: "blur(35px)",
+          filter: "blur(30px)",
           pointerEvents: "none",
         }} />
         {/* Deep sage orb - bottom centre */}
@@ -829,11 +829,20 @@ export default function OrvelloSite() {
         }} />
         {/* Warm highlight orb - bottom left */}
         <div style={{
-          position: "absolute", bottom: "10%", left: "10%",
-          width: 350, height: 350, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,107,60,0.14) 0%, transparent 60%)",
+          position: "absolute", bottom: "5%", left: "15%",
+          width: 450, height: 450, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(200,107,60,0.25) 0%, rgba(200,107,60,0.08) 40%, transparent 65%)",
           animation: "float5 9s ease-in-out infinite",
-          filter: "blur(30px)",
+          filter: "blur(25px)",
+          pointerEvents: "none",
+        }} />
+        {/* Extra warm orb - top right overlap */}
+        <div style={{
+          position: "absolute", top: "5%", right: "15%",
+          width: 400, height: 400, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(200,107,60,0.18) 0%, transparent 60%)",
+          animation: "float1 11s ease-in-out infinite",
+          filter: "blur(20px)",
           pointerEvents: "none",
         }} />
         {/* Subtle diagonal lines */}
@@ -1100,7 +1109,7 @@ export default function OrvelloSite() {
                         padding: "3px 8px",
                         marginLeft: 8,
                         whiteSpace: "nowrap",
-                      }}>Soon</span>
+                      }}>Available soon</span>
                     )}
                     {s.bookable && (
                       <span style={{
@@ -1233,18 +1242,18 @@ export default function OrvelloSite() {
           <FadeIn>
             <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-              Why choose Orvello
+              Why Orvello
             </p>
             <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 56 }}>
-              Why choose <span style={{ fontStyle: "italic" }}>Orvello?</span>
+              Trusted by homeowners, developers &amp; <span style={{ fontStyle: "italic" }}>landlords.</span>
             </h2>
           </FadeIn>
 
           <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, alignItems: "stretch" }}>
             {[
-              { title: "Qualified & Specialist", icon: <Award size={22} />, accent: "var(--sage)", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment, building performance, and compliance.", stat: "BEng + MSc", statLabel: "Qualified" },
-              { title: "Fully Insured & Compliant", icon: <Shield size={22} />, accent: "var(--sage-mid)", desc: "Professionally insured (PI & Public Liability) and operating in line with industry regulations and standards.", stat: "PI + PL", statLabel: "Covered" },
-              { title: "Clear, Actionable Reports", icon: <FileCheck size={22} />, accent: "var(--warm)", desc: "No generic outputs. Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%", statLabel: "Compliance" },
+              { title: "Qualified & Specialist", icon: <Award size={22} />, accent: "#4A5D4F", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment, building performance, and compliance.", stat: "BEng + MSc", statLabel: "Qualified" },
+              { title: "Fully Insured & Compliant", icon: <Shield size={22} />, accent: "#7A9580", desc: "Professionally insured (PI & Public Liability) and operating in line with industry regulations and standards.", stat: "PI + PL", statLabel: "Covered" },
+              { title: "Clear, Actionable Reports", icon: <FileCheck size={22} />, accent: "#C86B3C", desc: "No generic outputs. Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%", statLabel: "Compliance" },
               { title: "Fast & Reliable", icon: <Zap size={22} />, accent: "#6B8F71", desc: "Same-week EPC availability with rapid turnaround. Retrofit and consultancy work scoped within 48 hours.", stat: "48hr", statLabel: "Response" },
             ].map((card, i) => (
               <FadeIn key={i} delay={i * 0.1} style={{ display: "flex" }}>
@@ -1266,7 +1275,8 @@ export default function OrvelloSite() {
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                       <div style={{
                         width: 48, height: 48,
-                        background: `${card.accent}12`,
+                        background: `${card.accent}18`,
+                        border: `1px solid ${card.accent}30`,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         color: card.accent, borderRadius: 4,
                       }}>{card.icon}</div>
@@ -1279,8 +1289,8 @@ export default function OrvelloSite() {
                     <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 20, flex: 1 }}>{card.desc}</p>
                     <div style={{
                       display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "6px 14px", background: `${card.accent}10`,
-                      border: `1px solid ${card.accent}25`, fontSize: 12,
+                      padding: "6px 14px", background: `${card.accent}15`,
+                      border: `1px solid ${card.accent}30`, fontSize: 12,
                       fontWeight: 600, letterSpacing: "0.04em", color: card.accent, alignSelf: "flex-start",
                     }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{card.stat}</span>
@@ -1531,7 +1541,7 @@ export default function OrvelloSite() {
             </div>
             <div>
               <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.25, marginBottom: 18 }}>Contact</div>
-              <div style={{ fontSize: 14, opacity: 0.45, marginBottom: 12 }}>hello@orvello.co.uk</div>
+              <a href="mailto:hello@orvello.co.uk" style={{ fontSize: 14, opacity: 0.45, marginBottom: 12, display: "block", color: "var(--chalk)", textDecoration: "none", transition: "opacity 0.3s" }} onMouseEnter={(e) => e.target.style.opacity = "0.8"} onMouseLeave={(e) => e.target.style.opacity = "0.45"}>hello@orvello.co.uk</a>
               <div style={{ fontSize: 14, opacity: 0.45, marginBottom: 12 }}>Northampton, UK</div>
             </div>
           </div>
