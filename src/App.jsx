@@ -190,6 +190,108 @@ function HeroGrain() {
   );
 }
 
+const FAQ_DATA = [
+  {
+    q: "What is an EPC and do I need one?",
+    a: "An Energy Performance Certificate rates your property's energy efficiency from A (most efficient) to G (least efficient). You're legally required to have a valid EPC when selling, renting, or letting a property. EPCs are valid for 10 years.",
+  },
+  {
+    q: "How long does an EPC assessment take?",
+    a: "A typical domestic EPC assessment takes 30–60 minutes depending on the size of the property. We aim to have your certificate lodged and sent to you within 24–48 hours of the visit.",
+  },
+  {
+    q: "What areas do you cover?",
+    a: "We're based in Northampton and cover the whole of Northamptonshire, including Kettering, Wellingborough, Corby, Daventry, and Towcester. We also work across surrounding counties by arrangement.",
+  },
+  {
+    q: "What is a PAS2035 retrofit assessment?",
+    a: "PAS2035 is the UK standard for retrofitting dwellings for improved energy efficiency. A retrofit assessment evaluates your property's current condition and energy performance, then recommends a suitable improvement pathway. It's required for government-funded schemes like ECO and GBIS.",
+  },
+  {
+    q: "What does a CDM Principal Designer do?",
+    a: "Under CDM 2015, the Principal Designer plans, manages, and coordinates health and safety during the pre-construction phase of a project. We ensure design risks are identified and managed, produce pre-construction information packs, and compile the health and safety file.",
+  },
+  {
+    q: "Do you offer bulk or portfolio pricing?",
+    a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Get in touch with your requirements and we'll provide a tailored quote.",
+  },
+  {
+    q: "How do I book an assessment?",
+    a: "You can book directly through our website using the booking buttons for EPC or retrofit assessments. For CDM and fire risk enquiries, use the contact form and we'll respond within one working day.",
+  },
+];
+
+function FaqAccordion() {
+  const [openIndex, setOpenIndex] = useState(null);
+  return (
+    <div>
+      {FAQ_DATA.map((item, i) => {
+        const isOpen = openIndex === i;
+        return (
+          <div key={i} style={{
+            borderBottom: "1px solid var(--border)",
+          }}>
+            <button
+              onClick={() => setOpenIndex(isOpen ? null : i)}
+              style={{
+                width: "100%",
+                padding: "22px 0",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 20,
+                fontFamily: "inherit",
+                textAlign: "left",
+              }}
+            >
+              <span style={{
+                fontSize: 16,
+                fontWeight: 500,
+                color: isOpen ? "var(--sage)" : "var(--ink)",
+                transition: "color 0.3s",
+                lineHeight: 1.4,
+              }}>
+                {item.q}
+              </span>
+              <span style={{
+                fontSize: 22,
+                color: "var(--sage)",
+                transition: "transform 0.35s cubic-bezier(.16,1,.3,1)",
+                transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
+                flexShrink: 0,
+                lineHeight: 1,
+                fontWeight: 300,
+              }}>
+                +
+              </span>
+            </button>
+            <div style={{
+              maxHeight: isOpen ? 300 : 0,
+              overflow: "hidden",
+              transition: "max-height 0.4s cubic-bezier(.16,1,.3,1), opacity 0.3s",
+              opacity: isOpen ? 1 : 0,
+            }}>
+              <p style={{
+                fontSize: 14,
+                lineHeight: 1.75,
+                color: "var(--text-secondary)",
+                fontWeight: 300,
+                paddingBottom: 22,
+                maxWidth: 540,
+              }}>
+                {item.a}
+              </p>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function OrvelloSite() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeService, setActiveService] = useState(0);
@@ -409,6 +511,7 @@ export default function OrvelloSite() {
           .booking-banner-grid { flex-direction: column !important; align-items: flex-start !important; }
           .booking-banner-grid > div:last-child { width: 100% !important; flex-direction: column !important; }
           .booking-banner-grid > div:last-child > a { width: 100% !important; text-align: center !important; justify-content: center !important; }
+          .process-line { display: none !important; }
         }
       `}</style>
 
@@ -719,6 +822,58 @@ export default function OrvelloSite() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
+      <section style={{ padding: "80px clamp(20px, 4vw, 64px)", background: "var(--chalk)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <FadeIn>
+            <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+              <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
+              How it works
+              <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
+            </p>
+            <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 400, letterSpacing: "-0.01em", textAlign: "center", marginBottom: 56 }}>
+              From booking to certificate in <span style={{ fontStyle: "italic" }}>three simple steps.</span>
+            </h2>
+          </FadeIn>
+          <div className="grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, position: "relative" }}>
+            {/* Connecting line */}
+            <div className="process-line" style={{
+              position: "absolute", top: 40, left: "20%", right: "20%", height: 1,
+              background: "var(--border)", zIndex: 0,
+            }} />
+            {[
+              { step: "01", title: "Book online", desc: "Choose your service, pick a date, and complete our short booking form. We confirm within 2 hours.", icon: <Calendar size={20} /> },
+              { step: "02", title: "We visit", desc: "Our assessor visits your property, carries out the survey, and collects all the data needed for your report.", icon: <Home size={20} /> },
+              { step: "03", title: "Report delivered", desc: "You receive your EPC certificate or retrofit report digitally, typically within 48 hours of the visit.", icon: <FileCheck size={20} /> },
+            ].map((item, i) => (
+              <FadeIn key={i} delay={i * 0.15}>
+                <div style={{ textAlign: "center", position: "relative", zIndex: 1, padding: "0 24px" }}>
+                  <div style={{
+                    width: 80, height: 80,
+                    borderRadius: "50%",
+                    background: i === 1 ? "var(--sage)" : "white",
+                    border: i === 1 ? "none" : "2px solid var(--border)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    margin: "0 auto 24px",
+                    color: i === 1 ? "white" : "var(--sage)",
+                    transition: "all 0.3s",
+                    boxShadow: i === 1 ? "0 8px 24px rgba(74,93,79,0.2)" : "none",
+                  }}>
+                    {item.icon}
+                  </div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: "0.1em",
+                    color: "var(--sage)", textTransform: "uppercase", marginBottom: 8,
+                  }}>Step {item.step}</div>
+                  <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 10, letterSpacing: "-0.01em" }}>{item.title}</h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--text-secondary)", fontWeight: 300 }}>{item.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* INTRO / TRUST STRIP */}
       <section className="section-pad" style={{ padding: "100px clamp(20px, 4vw, 64px)" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -761,6 +916,77 @@ export default function OrvelloSite() {
               </div>
             </FadeIn>
           </div>
+        </div>
+      </section>
+
+      {/* EPC PRICING */}
+      <section style={{ padding: "80px clamp(20px, 4vw, 64px) 100px", background: "var(--chalk)" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <FadeIn>
+            <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
+              EPC Pricing
+            </p>
+            <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(28px, 3.5vw, 40px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 16 }}>
+              Transparent, competitive rates.
+            </h2>
+            <p style={{ fontSize: 16, lineHeight: 1.7, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 48, maxWidth: 520 }}>
+              No hidden fees. Price includes the assessment visit, lodgement, and digital certificate delivery.
+            </p>
+          </FadeIn>
+          <FadeIn delay={0.1}>
+            <div style={{ overflow: "hidden", border: "1px solid var(--border)", background: "white" }}>
+              {[
+                { beds: "1–2 bedroom", price: "£75", popular: false },
+                { beds: "3 bedroom", price: "£85", popular: true },
+                { beds: "4 bedroom", price: "£95", popular: false },
+                { beds: "5+ bedroom", price: "£110+", popular: false },
+              ].map((row, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "20px 28px",
+                  borderBottom: i < 3 ? "1px solid var(--border)" : "none",
+                  background: row.popular ? "var(--sage-light)" : "transparent",
+                  transition: "background 0.3s",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <span style={{ fontSize: 16, fontWeight: 500, color: "var(--ink)" }}>{row.beds}</span>
+                    {row.popular && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
+                        textTransform: "uppercase", color: "var(--sage)",
+                        background: "rgba(74,93,79,0.1)", padding: "3px 10px",
+                      }}>Most common</span>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 24, color: "var(--ink)" }}>{row.price}</span>
+                    <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" style={{
+                      fontSize: 12, fontWeight: 600, letterSpacing: "0.06em",
+                      textTransform: "uppercase", color: "var(--sage)",
+                      textDecoration: "none", display: "flex", alignItems: "center", gap: 6,
+                      transition: "opacity 0.3s",
+                    }}>
+                      Book <ArrowRight size={12} />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.2}>
+            <div style={{ display: "flex", gap: 32, marginTop: 28, flexWrap: "wrap" }}>
+              {[
+                { label: "Trade rate", value: "From £65" },
+                { label: "Bulk (10+)", value: "From £55" },
+                { label: "Retrofit assessment", value: "From £160" },
+              ].map((extra, i) => (
+                <div key={i} style={{ fontSize: 14, color: "var(--text-secondary)" }}>
+                  <span style={{ fontWeight: 600, color: "var(--ink)" }}>{extra.label}:</span>{" "}{extra.value}
+                </div>
+              ))}
+            </div>
+          </FadeIn>
         </div>
       </section>
 
@@ -1011,6 +1237,29 @@ export default function OrvelloSite() {
                 </div>
               </FadeIn>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="section-pad" style={{ padding: "100px clamp(20px, 4vw, 64px)", background: "white", borderTop: "1px solid var(--border)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div className="grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 80, alignItems: "start" }}>
+            <FadeIn>
+              <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
+                FAQ
+              </p>
+              <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 20 }}>
+                Common<br />questions
+              </h2>
+              <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-secondary)", fontWeight: 300 }}>
+                Can't find what you're looking for? Get in touch and we'll get back to you within one working day.
+              </p>
+            </FadeIn>
+            <FadeIn delay={0.1}>
+              <FaqAccordion />
+            </FadeIn>
           </div>
         </div>
       </section>
