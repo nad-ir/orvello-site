@@ -1,39 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { PenTool, Building2, Home, Landmark, KeyRound, Briefcase, Calendar, ArrowRight, Clock } from "lucide-react";
+import { PenTool, Building2, Home, Landmark, KeyRound, Briefcase, Calendar, ArrowRight, Clock, Shield, Award, FileCheck, Zap } from "lucide-react";
 
 const SERVICES = [
-  {
-    id: "cdm",
-    title: "CDM Principal Designer",
-    subtitle: "Construction (Design & Management) Regulations 2015",
-    comingSoon: true,
-    description:
-      "We take on the Principal Designer role for your construction projects, managing pre-construction health and safety information, coordinating design teams, and ensuring CDM compliance from concept to completion.",
-    items: [
-      "Principal Designer appointments",
-      "Client advisory services",
-      "Pre-construction information packs",
-      "Health & Safety file compilation",
-      "Design risk management",
-      "Site inspections & audits",
-    ],
-  },
-  {
-    id: "fire",
-    title: "Fire Risk Assessments",
-    subtitle: "Regulatory Reform (Fire Safety) Order 2005",
-    comingSoon: true,
-    description:
-      "Comprehensive fire risk assessments for commercial properties, HMOs, and residential blocks. We identify hazards, evaluate risk, and provide actionable recommendations to keep your building compliant and your occupants safe.",
-    items: [
-      "Type 1, 2 & 3 assessments",
-      "HMO & residential block assessments",
-      "Commercial premises",
-      "Fire door inspections",
-      "Review & reassessment",
-      "Fire safety training",
-    ],
-  },
   {
     id: "epc",
     title: "Domestic EPCs",
@@ -64,6 +32,38 @@ const SERVICES = [
       "ECO & GBIS scheme support",
       "Batch assessment pricing",
       "Social housing portfolios",
+    ],
+  },
+  {
+    id: "cdm",
+    title: "CDM Principal Designer",
+    subtitle: "Construction (Design & Management) Regulations 2015",
+    comingSoon: true,
+    description:
+      "We take on the Principal Designer role for your construction projects, managing pre-construction health and safety information, coordinating design teams, and ensuring CDM compliance from concept to completion.",
+    items: [
+      "Principal Designer appointments",
+      "Client advisory services",
+      "Pre-construction information packs",
+      "Health & Safety file compilation",
+      "Design risk management",
+      "Site inspections & audits",
+    ],
+  },
+  {
+    id: "fire",
+    title: "Fire Risk Assessments",
+    subtitle: "Regulatory Reform (Fire Safety) Order 2005",
+    comingSoon: true,
+    description:
+      "Comprehensive fire risk assessments for commercial properties, HMOs, and residential blocks. We identify hazards, evaluate risk, and provide actionable recommendations to keep your building compliant and your occupants safe.",
+    items: [
+      "Type 1, 2 & 3 assessments",
+      "HMO & residential block assessments",
+      "Commercial premises",
+      "Fire door inspections",
+      "Review & reassessment",
+      "Fire safety training",
     ],
   },
 ];
@@ -123,12 +123,12 @@ function GrainOverlay() {
       imageData.data[i] = v;
       imageData.data[i + 1] = v;
       imageData.data[i + 2] = v;
-      imageData.data[i + 3] = 10;
+      imageData.data[i + 3] = 22;
     }
     ctx.putImageData(imageData, 0, 0);
     container.style.backgroundImage = `url(${canvas.toDataURL("image/png")})`;
     container.style.backgroundRepeat = "repeat";
-    container.style.backgroundSize = "256px 256px";
+    container.style.backgroundSize = "200px 200px";
   }, []);
   return (
     <div
@@ -141,7 +141,49 @@ function GrainOverlay() {
         height: "100%",
         pointerEvents: "none",
         zIndex: 999,
-        opacity: 0.7,
+        opacity: 0.9,
+        mixBlendMode: "overlay",
+      }}
+    />
+  );
+}
+
+function HeroGrain() {
+  const containerRef = useRef(null);
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const w = 256;
+    const h = 256;
+    canvas.width = w;
+    canvas.height = h;
+    const imageData = ctx.createImageData(w, h);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const v = Math.random() * 255;
+      imageData.data[i] = v;
+      imageData.data[i + 1] = v;
+      imageData.data[i + 2] = v;
+      imageData.data[i + 3] = 22;
+    }
+    ctx.putImageData(imageData, 0, 0);
+    container.style.backgroundImage = `url(${canvas.toDataURL("image/png")})`;
+    container.style.backgroundRepeat = "repeat";
+    container.style.backgroundSize = "128px 128px";
+  }, []);
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        zIndex: 1,
+        opacity: 0.6,
         mixBlendMode: "multiply",
       }}
     />
@@ -265,6 +307,15 @@ export default function OrvelloSite() {
         }
         .credential-card:hover { border-color: var(--sage-mid); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
 
+        .credential-card-v2:hover {
+          border-color: var(--sage-mid) !important;
+          transform: translateY(-4px);
+          box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+        }
+        .credential-card-v2:hover > div:first-child {
+          height: 5px !important;
+        }
+
         .stat-pill {
           display: inline-flex;
           align-items: center;
@@ -368,7 +419,7 @@ export default function OrvelloSite() {
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 2, cursor: "pointer" }} onClick={() => scrollTo("top")}>
-            <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 26, fontWeight: 400, color: "var(--sage)", letterSpacing: "-0.01em" }}>Orvello</span>
+            <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 26, fontWeight: 400, color: "var(--sage)", letterSpacing: "-0.01em" }}><em>O</em>rvello</span>
           </div>
           <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 36 }}>
             <button className="nav-link" onClick={() => scrollTo("services")}>Services</button>
@@ -399,21 +450,107 @@ export default function OrvelloSite() {
         overflow: "hidden",
         background: "linear-gradient(165deg, #F6F5F0 0%, #EBE9E0 40%, #E4EAE5 70%, #DDE5DF 100%)",
       }}>
-        {/* Soft radial glows */}
+        {/* Animated floating orbs */}
+        <style>{`
+          @keyframes float1 {
+            0% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(120px, -60px) scale(1.3); }
+            50% { transform: translate(40px, 40px) scale(0.85); }
+            75% { transform: translate(-80px, -20px) scale(1.15); }
+            100% { transform: translate(0, 0) scale(1); }
+          }
+          @keyframes float2 {
+            0% { transform: translate(0, 0) scale(1); }
+            30% { transform: translate(-100px, 80px) scale(1.25); }
+            60% { transform: translate(60px, -50px) scale(0.8); }
+            100% { transform: translate(0, 0) scale(1); }
+          }
+          @keyframes float3 {
+            0% { transform: translate(0, 0) scale(1); }
+            40% { transform: translate(90px, 70px) scale(1.35); }
+            70% { transform: translate(-60px, -40px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+          }
+          @keyframes float4 {
+            0% { transform: translate(0, 0) scale(1); }
+            35% { transform: translate(-70px, -80px) scale(1.2); }
+            65% { transform: translate(50px, 60px) scale(0.85); }
+            100% { transform: translate(0, 0) scale(1); }
+          }
+          @keyframes float5 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(100px, -40px) scale(1.4); }
+            100% { transform: translate(0, 0) scale(1); }
+          }
+          @keyframes morphBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+        `}</style>
+        {/* Morphing gradient base */}
         <div style={{
-          position: "absolute", top: "-20%", right: "-10%",
-          width: "60%", height: "80%",
-          background: "radial-gradient(ellipse, rgba(74,93,79,0.07) 0%, transparent 70%)",
+          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+          background: "linear-gradient(135deg, #F6F5F0, #E4EAE5, #DDE5DF, #EBE9E0, #E8E3D8, #E4EAE5)",
+          backgroundSize: "300% 300%",
+          animation: "morphBg 15s ease-in-out infinite",
           pointerEvents: "none",
         }} />
+        {/* Large sage orb - top right */}
         <div style={{
-          position: "absolute", bottom: "-10%", left: "-5%",
-          width: "40%", height: "60%",
-          background: "radial-gradient(ellipse, rgba(196,168,130,0.06) 0%, transparent 70%)",
+          position: "absolute", top: "-10%", right: "-5%",
+          width: 600, height: 600, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(74,93,79,0.22) 0%, rgba(74,93,79,0.05) 50%, transparent 70%)",
+          animation: "float1 8s ease-in-out infinite",
+          filter: "blur(40px)",
           pointerEvents: "none",
         }} />
+        {/* Warm orb - mid left */}
+        <div style={{
+          position: "absolute", top: "30%", left: "-8%",
+          width: 500, height: 500, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(196,168,130,0.2) 0%, rgba(196,168,130,0.05) 50%, transparent 70%)",
+          animation: "float2 10s ease-in-out infinite",
+          filter: "blur(35px)",
+          pointerEvents: "none",
+        }} />
+        {/* Deep sage orb - bottom centre */}
+        <div style={{
+          position: "absolute", bottom: "-15%", right: "25%",
+          width: 700, height: 700, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(58,75,62,0.18) 0%, rgba(58,75,62,0.04) 50%, transparent 70%)",
+          animation: "float3 12s ease-in-out infinite",
+          filter: "blur(50px)",
+          pointerEvents: "none",
+        }} />
+        {/* Small accent orb - top left */}
+        <div style={{
+          position: "absolute", top: "10%", left: "30%",
+          width: 300, height: 300, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(74,93,79,0.15) 0%, transparent 60%)",
+          animation: "float4 7s ease-in-out infinite",
+          filter: "blur(25px)",
+          pointerEvents: "none",
+        }} />
+        {/* Warm highlight orb - bottom left */}
+        <div style={{
+          position: "absolute", bottom: "10%", left: "10%",
+          width: 350, height: 350, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(196,168,130,0.14) 0%, transparent 60%)",
+          animation: "float5 9s ease-in-out infinite",
+          filter: "blur(30px)",
+          pointerEvents: "none",
+        }} />
+        {/* Subtle diagonal lines */}
+        <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0.035, pointerEvents: "none" }}>
+          {[...Array(20)].map((_, i) => (
+            <line key={i} x1={`${i * 6}%`} y1="0" x2={`${i * 6 + 20}%`} y2="100%" stroke="var(--sage)" strokeWidth="0.5" />
+          ))}
+        </svg>
+        {/* Hero-only grain overlay */}
+        <HeroGrain />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 2 }}>
           <FadeIn>
             <p style={{
               fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase",
@@ -455,7 +592,7 @@ export default function OrvelloSite() {
           </FadeIn>
           <FadeIn delay={0.4}>
             <div className="stat-pills" style={{ display: "flex", gap: 12, marginTop: 56, flexWrap: "wrap" }}>
-              {["CDM 2015", "Fire Safety", "Domestic EPC", "PAS2035"].map((label) => (
+              {["Domestic EPC", "PAS2035", "CDM 2015", "Fire Safety"].map((label) => (
                 <div className="stat-pill" key={label}>
                   <span className="dot" />
                   {label}
@@ -800,23 +937,69 @@ export default function OrvelloSite() {
 
           <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
             {[
-              { title: "Qualified", desc: "BEng Civil Engineering with postgraduate qualifications in safety management and energy assessment." },
-              { title: "Regulated", desc: "Professionally insured with PI and public liability cover. Registered with relevant industry bodies." },
-              { title: "Thorough", desc: "Every report is produced to a consistent standard with clear findings, practical recommendations, and full regulatory referencing." },
-              { title: "Responsive", desc: "Same-week availability for EPCs and retrofit assessments. CDM and fire risk work scoped and quoted within 48 hours." },
+              { title: "Qualified", icon: <Award size={22} />, accent: "var(--sage)", desc: "BEng Civil Engineering with postgraduate qualifications in safety management and energy assessment.", stat: "BEng + MSc", statLabel: "Qualified" },
+              { title: "Regulated", icon: <Shield size={22} />, accent: "var(--sage-mid)", desc: "Professionally insured with PI and public liability cover. Registered with relevant industry bodies.", stat: "PI + PL", statLabel: "Insured" },
+              { title: "Thorough", icon: <FileCheck size={22} />, accent: "var(--warm)", desc: "Every report is produced to a consistent standard with clear findings, practical recommendations, and full regulatory referencing.", stat: "100%", statLabel: "Compliance" },
+              { title: "Responsive", icon: <Zap size={22} />, accent: "#6B8F71", desc: "Same-week availability for EPCs and retrofit assessments. CDM and fire risk work scoped and quoted within 48 hours.", stat: "48hr", statLabel: "Turnaround" },
             ].map((card, i) => (
-              <FadeIn key={i} delay={i * 0.08}>
-                <div className="credential-card">
-                  <div style={{
-                    width: 40, height: 40,
-                    background: "var(--sage-light)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    marginBottom: 22, fontSize: 14, color: "var(--sage)", fontWeight: 700,
-                  }}>
-                    {String(i + 1).padStart(2, "0")}
+              <FadeIn key={i} delay={i * 0.1}>
+                <div className="credential-card-v2" style={{
+                  padding: 0,
+                  background: "rgba(255,255,255,0.5)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid var(--border)",
+                  overflow: "hidden",
+                  transition: "all 0.4s cubic-bezier(.16,1,.3,1)",
+                  cursor: "default",
+                  position: "relative",
+                }}>
+                  {/* Top accent bar */}
+                  <div style={{ height: 3, background: card.accent, transition: "height 0.3s" }} />
+                  
+                  <div style={{ padding: "28px 28px 32px" }}>
+                    {/* Icon + number row */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                      <div style={{
+                        width: 48, height: 48,
+                        background: `${card.accent}12`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: card.accent,
+                        borderRadius: 4,
+                      }}>
+                        {card.icon}
+                      </div>
+                      <span style={{
+                        fontFamily: "'Instrument Serif', serif",
+                        fontSize: 36,
+                        color: "var(--border)",
+                        fontStyle: "italic",
+                        lineHeight: 1,
+                      }}>
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    
+                    {/* Title */}
+                    <h3 style={{ fontSize: 19, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em", color: "var(--ink)" }}>{card.title}</h3>
+                    
+                    {/* Description */}
+                    <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 20 }}>{card.desc}</p>
+                    
+                    {/* Bottom stat chip */}
+                    <div style={{
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      padding: "6px 14px",
+                      background: `${card.accent}10`,
+                      border: `1px solid ${card.accent}25`,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      letterSpacing: "0.04em",
+                      color: card.accent,
+                    }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>{card.stat}</span>
+                      <span style={{ opacity: 0.7, textTransform: "uppercase", fontSize: 10 }}>{card.statLabel}</span>
+                    </div>
                   </div>
-                  <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 14, letterSpacing: "-0.01em" }}>{card.title}</h3>
-                  <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300 }}>{card.desc}</p>
                 </div>
               </FadeIn>
             ))}
@@ -874,64 +1057,109 @@ export default function OrvelloSite() {
                 padding: 44,
                 backdropFilter: "blur(4px)",
               }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
-                  {[
-                    { label: "Name", type: "text", placeholder: "Your full name" },
-                    { label: "Email", type: "email", placeholder: "you@company.com" },
-                    { label: "Service of interest", type: "select", options: ["CDM Principal Designer", "Fire Risk Assessment", "Domestic EPC", "PAS2035 Retrofit Assessment", "Multiple services", "Not sure yet"] },
-                    { label: "Message", type: "textarea", placeholder: "Tell us about your project or requirement..." },
-                  ].map((field) => (
-                    <div key={field.label}>
-                      <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>
-                        {field.label}
-                      </label>
-                      {field.type === "textarea" ? (
-                        <textarea
-                          placeholder={field.placeholder}
-                          rows={4}
-                          style={{
-                            width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                            padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit",
-                            resize: "vertical", outline: "none", transition: "border-color 0.3s",
-                          }}
+                {(() => {
+                  const [formState, setFormState] = useState({ name: "", email: "", service: "", message: "" });
+                  const [submitted, setSubmitted] = useState(false);
+                  const [sending, setSending] = useState(false);
+
+                  const handleSubmit = async (e) => {
+                    e.preventDefault();
+                    setSending(true);
+                    try {
+                      const res = await fetch("https://formspree.io/f/mvzwlvww", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formState),
+                      });
+                      if (res.ok) setSubmitted(true);
+                    } catch (err) {
+                      console.error(err);
+                    }
+                    setSending(false);
+                  };
+
+                  if (submitted) {
+                    return (
+                      <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                        <div style={{
+                          width: 56, height: 56, borderRadius: "50%",
+                          background: "var(--sage)", display: "flex", alignItems: "center", justifyContent: "center",
+                          margin: "0 auto 24px", fontSize: 24, color: "white",
+                        }}>✓</div>
+                        <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: 28, fontWeight: 400, marginBottom: 12 }}>
+                          Enquiry sent
+                        </h3>
+                        <p style={{ fontSize: 15, opacity: 0.5, fontWeight: 300 }}>
+                          Thanks {formState.name.split(" ")[0]}. We'll get back to you within one working day.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Name</label>
+                        <input
+                          type="text" placeholder="Your full name" value={formState.name} required
+                          onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none", transition: "border-color 0.3s" }}
                           onFocus={(e) => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
                           onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
                         />
-                      ) : field.type === "select" ? (
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Email</label>
+                        <input
+                          type="email" placeholder="you@company.com" value={formState.email} required
+                          onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none", transition: "border-color 0.3s" }}
+                          onFocus={(e) => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
+                          onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Service of interest</label>
                         <select
-                          style={{
-                            width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                            padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none",
-                            appearance: "none", transition: "border-color 0.3s",
-                          }}
+                          value={formState.service}
+                          onChange={(e) => setFormState({ ...formState, service: e.target.value })}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none", appearance: "none", transition: "border-color 0.3s" }}
                         >
                           <option value="" style={{ background: "#232320" }}>Select a service</option>
-                          {field.options.map((o) => (
+                          {["Domestic EPC", "PAS2035 Retrofit Assessment", "CDM Principal Designer", "Fire Risk Assessment", "Multiple services", "Not sure yet"].map((o) => (
                             <option key={o} value={o} style={{ background: "#232320" }}>{o}</option>
                           ))}
                         </select>
-                      ) : (
-                        <input
-                          type={field.type}
-                          placeholder={field.placeholder}
-                          style={{
-                            width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                            padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none",
-                            transition: "border-color 0.3s",
-                          }}
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Message</label>
+                        <textarea
+                          placeholder="Tell us about your project or requirement..." rows={4}
+                          value={formState.message}
+                          onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", resize: "vertical", outline: "none", transition: "border-color 0.3s" }}
                           onFocus={(e) => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
                           onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
                         />
-                      )}
+                      </div>
+                      <button
+                        className="btn-primary"
+                        onClick={handleSubmit}
+                        disabled={sending || !formState.name || !formState.email}
+                        style={{
+                          width: "100%", marginTop: 8, background: "var(--sage)", padding: "18px 36px",
+                          opacity: (sending || !formState.name || !formState.email) ? 0.5 : 1,
+                          cursor: (sending || !formState.name || !formState.email) ? "not-allowed" : "pointer",
+                        }}
+                      >
+                        {sending ? "Sending..." : "Send enquiry"}
+                      </button>
+                      <p style={{ fontSize: 12, opacity: 0.3, textAlign: "center", marginTop: 4 }}>
+                        We typically respond within one working day.
+                      </p>
                     </div>
-                  ))}
-                  <button className="btn-primary" style={{ width: "100%", marginTop: 8, background: "var(--sage)", padding: "18px 36px" }}>
-                    Send enquiry
-                  </button>
-                  <p style={{ fontSize: 12, opacity: 0.3, textAlign: "center", marginTop: 4 }}>
-                    We typically respond within one working day.
-                  </p>
-                </div>
+                  );
+                })()}
               </div>
             </FadeIn>
           </div>
@@ -943,7 +1171,7 @@ export default function OrvelloSite() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
             <div>
-              <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 22, color: "var(--sage-mid)" }}>Orvello</span>
+              <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 22, color: "var(--sage-mid)" }}><em>O</em>rvello</span>
               <p style={{ fontSize: 14, opacity: 0.35, marginTop: 14, lineHeight: 1.7, maxWidth: 320 }}>
                 Construction consultancy specialising in CDM, fire safety, energy performance, and retrofit assessment. Based in Northampton, serving clients across the Midlands.
               </p>
