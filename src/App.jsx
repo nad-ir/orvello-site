@@ -9,13 +9,33 @@ const SERVICES = [
 ];
 
 const FAQ_DATA = [
-  { q: "What is an EPC and do I need one?", a: "An Energy Performance Certificate rates your property's energy efficiency from A to G. You're legally required to have a valid EPC when selling, renting, or letting a property. EPCs are valid for 10 years." },
-  { q: "How long does an EPC assessment take?", a: "A typical domestic EPC assessment takes 30–60 minutes depending on the size of the property. We aim to have your certificate lodged and sent to you within 24–48 hours of the visit." },
-  { q: "What areas do you cover?", a: "We cover the whole of Northamptonshire, including Kettering, Wellingborough, Corby, Daventry, and Towcester, as well as surrounding areas by arrangement." },
-  { q: "What is a PAS2035 retrofit assessment?", a: "PAS2035 is the UK standard for retrofitting dwellings for improved energy efficiency. A retrofit assessment evaluates your property's current condition, then recommends a suitable improvement pathway. Required for ECO and GBIS schemes." },
-  { q: "What does a CDM Principal Designer do?", a: "Under CDM 2015, the Principal Designer plans, manages, and coordinates health and safety during the pre-construction phase. We ensure design risks are identified, produce pre-construction information packs, and compile the H&S file." },
-  { q: "Do you offer bulk or portfolio pricing?", a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Get in touch with your requirements for tailored pricing." },
-  { q: "How do I book an assessment?", a: "Book directly through our website using the booking buttons for EPC or retrofit assessments. For CDM and fire risk enquiries, use the contact form below." },
+  { q: "What is an EPC and do I need one?", 
+    a: "An Energy Performance Certificate (EPC) rates your property's energy efficiency from A to G. A valid EPC is legally required when selling, letting or renting a property. Certificates remain valid for 10 years." 
+  },
+  { 
+    q: "How long does an EPC assessment take?", 
+    a: "Most domestic EPC assessments take 30–60 minutes, depending on property size and layout. Your certificate is typically lodged and issued within 24–48 hours of the visit." 
+  },
+  { 
+    q: "What areas do you cover?", 
+    a: "We cover Northampton and the wider Northamptonshire area, including Kettering, Wellingborough, Corby, Daventry and Towcester. Surrounding areas can be accommodated by arrangement." 
+  },
+  { 
+    q: "What is a PAS2035 retrofit assessment?", 
+    a: "PAS2035 is the UK standard for domestic retrofit. A retrofit assessment reviews your property’s condition, occupancy and energy performance, then defines a compliant improvement pathway. Required for schemes such as ECO4 and the Great British Insulation Scheme." 
+  },
+  { 
+    q: "What does a CDM Principal Designer do?", 
+    a: "Under CDM 2015, the Principal Designer is responsible for planning, managing and coordinating health and safety during the pre-construction phase. This includes identifying design risks, preparing pre-construction information, and ensuring compliance throughout the project lifecycle." 
+  },
+  { 
+    q: "Do you offer bulk or portfolio pricing?", 
+    a: "Yes — we provide structured pricing for landlords, estate agents and organisations with multiple properties. Contact us with your requirements for a tailored quote." 
+  },
+  { 
+    q: "How do I book an assessment?", 
+    a: "You can book directly online using our instant pricing tool for EPC and retrofit assessments. For CDM or fire risk enquiries, submit a request via the contact form and we’ll respond promptly." 
+  },
 ];
 
 function useInView(threshold = 0.12) {
@@ -40,54 +60,59 @@ function Reveal({ children, delay = 0, className = "", style = {} }) {
   );
 }
 
-/* ─── HERO BG: Single large mouse-reactive orb + grain ─── */
+/* ─── HERO BG: Mouse-reactive on desktop, auto-drifting on touch ─── */
 function HeroBg() {
   const canvasRef = useRef(null);
-  const mouseRef = useRef({ x: 0.5, y: 0.3 });
+  const mouseRef = useRef({ x: 0.4, y: 0.3 });
   const grainRef = useRef(null);
+  const isTouchRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     let w, h, frame;
+    isTouchRef.current = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-    const resize = () => {
-      w = canvas.width = canvas.offsetWidth * 0.5;
-      h = canvas.height = canvas.offsetHeight * 0.5;
-    };
+    const resize = () => { w = canvas.width = canvas.offsetWidth * 0.5; h = canvas.height = canvas.offsetHeight * 0.5; };
     resize();
     window.addEventListener("resize", resize);
 
     const onMouse = (e) => {
+      if (isTouchRef.current) return;
       const rect = canvas.getBoundingClientRect();
       mouseRef.current.x = (e.clientX - rect.left) / rect.width;
       mouseRef.current.y = (e.clientY - rect.top) / rect.height;
     };
     window.addEventListener("mousemove", onMouse);
 
-    // Single large orb
     let orbX = 0.4, orbY = 0.3;
 
     const draw = (t) => {
       ctx.fillStyle = "#272420";
       ctx.fillRect(0, 0, w, h);
 
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
+      let targetX, targetY;
+      if (isTouchRef.current) {
+        // Auto-drift on touch devices
+        targetX = 0.5 + Math.sin(t * 0.0002) * 0.25;
+        targetY = 0.4 + Math.cos(t * 0.00015) * 0.2;
+      } else {
+        targetX = mouseRef.current.x;
+        targetY = mouseRef.current.y;
+      }
 
-      // Smooth follow
-      orbX += (mx - orbX) * 0.03;
-      orbY += (my - orbY) * 0.03;
+      orbX += (targetX - orbX) * 0.03;
+      orbY += (targetY - orbY) * 0.03;
 
       const cx = orbX * w;
       const cy = orbY * h;
-      const cr = Math.min(w, h) * 0.7;
+      const cr = Math.min(w, h) * 0.9;
 
       const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr);
-      grad.addColorStop(0, "rgba(228, 208, 72, 0.12)");
-      grad.addColorStop(0.3, "rgba(228, 208, 72, 0.06)");
-      grad.addColorStop(0.6, "rgba(228, 208, 72, 0.02)");
+      grad.addColorStop(0, "rgba(228, 208, 72, 0.14)");
+      grad.addColorStop(0.2, "rgba(228, 208, 72, 0.08)");
+      grad.addColorStop(0.45, "rgba(228, 208, 72, 0.03)");
       grad.addColorStop(1, "rgba(228, 208, 72, 0)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
@@ -99,24 +124,22 @@ function HeroBg() {
   }, []);
 
   useEffect(() => {
-    const grainCanvas = grainRef.current;
-    if (!grainCanvas) return;
-    const gw = 512, gh = 512;
-    grainCanvas.width = gw; grainCanvas.height = gh;
-    const gctx = grainCanvas.getContext("2d");
-    const imageData = gctx.createImageData(gw, gh);
-    const d = imageData.data;
-    for (let i = 0; i < d.length; i += 4) {
+    const c = grainRef.current;
+    if (!c) return;
+    c.width = 512; c.height = 512;
+    const ctx = c.getContext("2d");
+    const img = ctx.createImageData(512, 512);
+    for (let i = 0; i < img.data.length; i += 4) {
       const v = Math.random() * 255;
-      d[i] = v; d[i + 1] = v; d[i + 2] = v; d[i + 3] = 18;
+      img.data[i] = v; img.data[i+1] = v; img.data[i+2] = v; img.data[i+3] = 18;
     }
-    gctx.putImageData(imageData, 0, 0);
+    ctx.putImageData(img, 0, 0);
   }, []);
 
   return (
     <>
       <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }} />
-      <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, pointerEvents: "none", opacity: 0.6, mixBlendMode: "overlay" }} />
+      <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, pointerEvents: "none", opacity: 0.5, mixBlendMode: "overlay" }} />
     </>
   );
 }
@@ -258,7 +281,7 @@ function PricingCalc() {
   );
 
   return (
-    <div style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(28px) saturate(1.2)", border: "1px solid rgba(255,255,255,0.14)", padding: "clamp(24px,4vw,40px)", borderRadius: 10, boxShadow: "0 4px 40px rgba(0,0,0,0.15)" }}>
+    <div style={{ background: "rgba(255,255,255,0.05)", backdropFilter: "blur(24px) saturate(1.1)", border: "1px solid rgba(255,255,255,0.1)", padding: "clamp(24px,4vw,40px)", borderRadius: 8, boxShadow: "0 2px 24px rgba(0,0,0,0.1)" }}>
       <div style={{ marginBottom: 24 }}>
         <label className="mono-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 10, display: "block" }}>01 — Select service</label>
         <div style={{ display: "flex", gap: 8 }}>
@@ -351,9 +374,9 @@ export default function OrvelloSite() {
         .cred-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.06);border-color:rgba(228,208,72,0.3)}
         .lava-blobs{position:absolute;inset:0;overflow:hidden;z-index:0}
         .lava-blobs::before,.lava-blobs::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);animation:lavaFloat 12s ease-in-out infinite alternate}
-        .lava-blobs::before{width:60%;height:60%;top:-10%;left:10%;background:radial-gradient(circle,rgba(228,208,72,0.08) 0%,transparent 70%);animation-duration:14s}
-        .lava-blobs::after{width:50%;height:50%;bottom:-5%;right:5%;background:radial-gradient(circle,rgba(228,208,72,0.06) 0%,transparent 70%);animation-duration:18s;animation-delay:-4s}
-        @keyframes lavaFloat{0%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-20px) scale(1.1)}100%{transform:translate(-20px,15px) scale(0.95)}}
+        .lava-blobs::before{width:50%;height:50%;top:-5%;left:15%;background:radial-gradient(circle,rgba(228,208,72,0.05) 0%,transparent 70%);animation-duration:16s}
+        .lava-blobs::after{width:40%;height:40%;bottom:0%;right:10%;background:radial-gradient(circle,rgba(228,208,72,0.04) 0%,transparent 70%);animation-duration:20s;animation-delay:-5s}
+        @keyframes lavaFloat{0%{transform:translate(0,0) scale(1)}50%{transform:translate(25px,-15px) scale(1.05)}100%{transform:translate(-15px,10px) scale(0.97)}}
 
         .marquee-track{display:flex;gap:48px;animation:marquee 35s linear infinite;width:max-content}
         @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
@@ -519,7 +542,7 @@ export default function OrvelloSite() {
                 Trusted by architects, developers & housing providers across <em style={{ fontStyle: "italic" }}>Northamptonshire.</em>
               </h2>
               <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--muted)", fontWeight: 300 }}>
-                From single-dwelling EPC assessments to multi-phase CDM appointments, we support clients at every scale. Our work spans private developments, social housing portfolios, local authority contracts, and commercial property management across Northamptonshire and surrounding areas — always with the same standard of technical rigour.
+                From single-property EPC assessments to multi-phase CDM appointments, we support projects at every scale. Our work spans private developments, social housing portfolios, local authority contracts, and commercial property management across Northamptonshire and surrounding areas — all delivered with consistent technical rigour.
               </p>
             </Reveal>
             <Reveal delay={0.1}>
@@ -599,30 +622,31 @@ export default function OrvelloSite() {
         <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
           <Reveal>
             <div className="section-tag" style={{ color: "var(--muted)" }}>Why Orvello</div>
-            <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 44px)", marginBottom: 48 }}>What sets us <em style={{ fontStyle: "italic" }}>apart.</em></h2>
+            <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 44px)", marginBottom: 16 }}>What sets us <em style={{ fontStyle: "italic" }}>apart.</em></h2>
+            <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--muted)", fontWeight: 300, maxWidth: 520, marginBottom: 48 }}>Engineering-led consultancy with the qualifications, insurance, and responsiveness your project demands.</p>
           </Reveal>
           <div className="g4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
             {[
-              { icon: <Shield size={20} />, title: "Qualified & Specialist", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment and compliance.", stat: "BEng + MSc" },
-              { icon: <FileCheck size={20} />, title: "Fully Insured", desc: "Professionally insured with PI & Public Liability, in line with all industry standards.", stat: "PI + PL" },
-              { icon: <ClipboardList size={20} />, title: "Clear Reports", desc: "Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%" },
-              { icon: <Zap size={20} />, title: "Fast & Reliable", desc: "Same-week EPC availability. Retrofit and consultancy scoped within 48 hours.", stat: "48hr" },
+              { icon: <Shield size={20} />, title: "Qualified & Specialist", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment and compliance.", stat: "BEng + MSc", color: "#4A5D4F", bg: "rgba(74,93,79,0.08)", border: "rgba(74,93,79,0.15)" },
+              { icon: <FileCheck size={20} />, title: "Fully Insured", desc: "Professionally insured with PI & Public Liability, in line with all industry standards.", stat: "PI + PL", color: "#6B5B3E", bg: "rgba(107,91,62,0.08)", border: "rgba(107,91,62,0.15)" },
+              { icon: <ClipboardList size={20} />, title: "Clear Reports", desc: "Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%", color: "#5A7A8A", bg: "rgba(90,122,138,0.08)", border: "rgba(90,122,138,0.15)" },
+              { icon: <Zap size={20} />, title: "Fast & Reliable", desc: "Same-week EPC availability. Retrofit and consultancy scoped within 48 hours.", stat: "48hr", color: "#8B6D3F", bg: "rgba(139,109,63,0.08)", border: "rgba(139,109,63,0.15)" },
             ].map((c, i) => (
               <Reveal key={i} delay={i * 0.06}>
                 <div style={{
                   background: "var(--bg-light)", border: "1px solid var(--border-light)",
-                  borderRadius: 6, padding: 28, height: "100%",
+                  borderRadius: 8, padding: 28, height: "100%",
                   display: "flex", flexDirection: "column",
                   transition: "all 0.35s cubic-bezier(.22,1,.36,1)", cursor: "default",
                 }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(228,208,72,0.35)"; e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.06)"; }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 36px rgba(0,0,0,0.07)"; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 8, background: "var(--accent-dim)", border: "1px solid rgba(228,208,72,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>{c.icon}</div>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--accent)", letterSpacing: "0.05em", fontWeight: 400 }}>{c.stat}</span>
+                    <div style={{ width: 42, height: 42, borderRadius: 10, background: c.bg, border: `1px solid ${c.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: c.color }}>{c.icon}</div>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: c.color, letterSpacing: "0.05em", fontWeight: 500, opacity: 0.7 }}>{c.stat}</span>
                   </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 400, marginBottom: 10, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>{c.title}</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 500, marginBottom: 10, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>{c.title}</h3>
                   <p style={{ fontSize: 13, lineHeight: 1.75, color: "var(--muted)", fontWeight: 300, flex: 1 }}>{c.desc}</p>
                 </div>
               </Reveal>
@@ -633,12 +657,9 @@ export default function OrvelloSite() {
 
       {/* ═══ PRICING ═══ */}
       <section id="book" style={{ padding: "100px var(--px)", background: "var(--bg)", color: "var(--fg-light)", position: "relative", overflow: "hidden" }}>
-        {/* Extra prominent lava for glass effect */}
-        <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
-          <div style={{ position: "absolute", top: "-20%", left: "10%", width: "70%", height: "80%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.14) 0%, rgba(228,208,72,0.04) 50%, transparent 70%)", filter: "blur(60px)", animation: "lavaFloat 14s ease-in-out infinite alternate" }} />
-          <div style={{ position: "absolute", bottom: "-15%", right: "5%", width: "55%", height: "70%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.10) 0%, rgba(228,208,72,0.03) 50%, transparent 70%)", filter: "blur(70px)", animation: "lavaFloat 18s ease-in-out infinite alternate-reverse" }} />
-          <div style={{ position: "absolute", top: "30%", right: "25%", width: "40%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(200,180,60,0.08) 0%, transparent 60%)", filter: "blur(50px)", animation: "lavaFloat 10s ease-in-out infinite alternate" }} />
-        </div>
+        {/* Tight precision glow — not ambient flood */}
+        <div style={{ position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)", width: "45%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.07) 0%, rgba(228,208,72,0.02) 40%, transparent 65%)", filter: "blur(40px)", pointerEvents: "none", animation: "lavaFloat 16s ease-in-out infinite alternate" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "20%", width: "30%", height: "35%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.04) 0%, transparent 60%)", filter: "blur(35px)", pointerEvents: "none", animation: "lavaFloat 20s ease-in-out infinite alternate-reverse" }} />
         <LavaBg />
         <div style={{ maxWidth: 900, margin: "0 auto", position: "relative", zIndex: 2 }}>
           <Reveal>
@@ -729,7 +750,7 @@ export default function OrvelloSite() {
             <div>
               <div className="mono-label" style={{ color: "rgba(255,255,255,0.2)", marginBottom: 16, fontSize: 10 }}>Contact</div>
               <a href="mailto:hello@orvello.co.uk" style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", marginBottom: 10, display: "block", textDecoration: "none", transition: "color 0.2s", fontWeight: 300 }} onMouseEnter={e => e.target.style.color = "var(--accent)"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.3)"}>hello@orvello.co.uk</a>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontWeight: 300 }}>Northamptonshire, UK</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontWeight: 300 }}>Northampton, UK</div>
             </div>
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
