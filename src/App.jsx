@@ -9,33 +9,13 @@ const SERVICES = [
 ];
 
 const FAQ_DATA = [
-  { q: "What is an EPC and do I need one?", 
-    a: "An Energy Performance Certificate (EPC) rates your property's energy efficiency from A to G. A valid EPC is legally required when selling, letting or renting a property. Certificates remain valid for 10 years." 
-  },
-  { 
-    q: "How long does an EPC assessment take?", 
-    a: "Most domestic EPC assessments take 30–60 minutes, depending on property size and layout. Your certificate is typically lodged and issued within 24–48 hours of the visit." 
-  },
-  { 
-    q: "What areas do you cover?", 
-    a: "We cover Northampton and the wider Northamptonshire area, including Kettering, Wellingborough, Corby, Daventry and Towcester. Surrounding areas can be accommodated by arrangement." 
-  },
-  { 
-    q: "What is a PAS2035 retrofit assessment?", 
-    a: "PAS2035 is the UK standard for domestic retrofit. A retrofit assessment reviews your property’s condition, occupancy and energy performance, then defines a compliant improvement pathway. Required for schemes such as ECO4 and the Great British Insulation Scheme." 
-  },
-  { 
-    q: "What does a CDM Principal Designer do?", 
-    a: "Under CDM 2015, the Principal Designer is responsible for planning, managing and coordinating health and safety during the pre-construction phase. This includes identifying design risks, preparing pre-construction information, and ensuring compliance throughout the project lifecycle." 
-  },
-  { 
-    q: "Do you offer bulk or portfolio pricing?", 
-    a: "Yes — we provide structured pricing for landlords, estate agents and organisations with multiple properties. Contact us with your requirements for a tailored quote." 
-  },
-  { 
-    q: "How do I book an assessment?", 
-    a: "You can book directly online using our instant pricing tool for EPC and retrofit assessments. For CDM or fire risk enquiries, submit a request via the contact form and we’ll respond promptly." 
-  },
+  { q: "What is an EPC and do I need one?", a: "An Energy Performance Certificate rates your property's energy efficiency from A to G. You're legally required to have a valid EPC when selling, renting, or letting a property. EPCs are valid for 10 years." },
+  { q: "How long does an EPC assessment take?", a: "A typical domestic EPC assessment takes 30–60 minutes depending on the size of the property. We aim to have your certificate lodged and sent to you within 24–48 hours of the visit." },
+  { q: "What areas do you cover?", a: "We cover the whole of Northamptonshire, including Kettering, Wellingborough, Corby, Daventry, and Towcester, as well as surrounding areas by arrangement." },
+  { q: "What is a PAS2035 retrofit assessment?", a: "PAS2035 is the UK standard for retrofitting dwellings for improved energy efficiency. A retrofit assessment evaluates your property's current condition, then recommends a suitable improvement pathway. Required for ECO and GBIS schemes." },
+  { q: "What does a CDM Principal Designer do?", a: "Under CDM 2015, the Principal Designer plans, manages, and coordinates health and safety during the pre-construction phase. We ensure design risks are identified, produce pre-construction information packs, and compile the H&S file." },
+  { q: "Do you offer bulk or portfolio pricing?", a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Get in touch with your requirements for tailored pricing." },
+  { q: "How do I book an assessment?", a: "Book directly through our website using the booking buttons for EPC or retrofit assessments. For CDM and fire risk enquiries, use the contact form below." },
 ];
 
 function useInView(threshold = 0.12) {
@@ -94,7 +74,6 @@ function HeroBg() {
 
       let targetX, targetY;
       if (isTouchRef.current) {
-        // Auto-drift on touch devices
         targetX = 0.5 + Math.sin(t * 0.0002) * 0.25;
         targetY = 0.4 + Math.cos(t * 0.00015) * 0.2;
       } else {
@@ -138,8 +117,8 @@ function HeroBg() {
 
   return (
     <>
-      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }} />
-      <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, pointerEvents: "none", opacity: 0.5, mixBlendMode: "overlay" }} />
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0, borderRadius: "inherit" }} />
+      <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, pointerEvents: "none", opacity: 0.5, mixBlendMode: "overlay", borderRadius: "inherit" }} />
     </>
   );
 }
@@ -351,10 +330,13 @@ export default function OrvelloSite() {
           --font-body:'Bricolage Grotesque',sans-serif;
           --font-mono:'IBM Plex Mono',monospace;
           --max-w:1240px;--px:clamp(20px,5vw,72px);
+          --hero-top-bg:#E8E6E0;
         }
         .orvello-root{font-family:var(--font-body);background:var(--bg-light);color:var(--fg);min-height:100vh;overflow-x:hidden}
-        .nav-link{font-family:var(--font-mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.4);text-decoration:none;cursor:pointer;transition:color 0.2s;background:none;border:none;font-weight:400;padding:0}
-        .nav-link:hover{color:rgba(255,255,255,0.8)}
+        .nav-link{font-family:var(--font-mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#262420;text-decoration:none;cursor:pointer;transition:color 0.2s;background:none;border:none;font-weight:400;padding:0;opacity:0.45}
+        .nav-link:hover{opacity:0.85}
+        .nav-scrolled .nav-link{color:rgba(255,255,255,1);opacity:0.4}
+        .nav-scrolled .nav-link:hover{opacity:0.8}
         .btn-accent{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--bg);border:none;padding:14px 28px;font-size:12px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.3s cubic-bezier(.22,1,.36,1);font-family:var(--font-mono);border-radius:2px}
         .btn-accent:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 24px rgba(228,208,72,0.18)}
         .btn-outline-dark{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--fg-light);border:1px solid rgba(255,255,255,0.18);padding:14px 28px;font-size:12px;font-weight:300;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;font-family:var(--font-mono);text-decoration:none;border-radius:2px}
@@ -381,98 +363,117 @@ export default function OrvelloSite() {
         .marquee-track{display:flex;gap:48px;animation:marquee 35s linear infinite;width:max-content}
         @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
         .marquee-item{font-family:var(--font-display);font-size:clamp(24px,3.5vw,38px);color:var(--border-light);white-space:nowrap;font-style:italic;font-weight:300;user-select:none}
+
+        /* Hero card */
+        .hero-card{
+          position:relative;overflow:hidden;
+          border-radius:20px;
+          box-shadow:0 4px 60px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08);
+        }
+
         @media(max-width:900px){
           .desktop-nav{display:none!important}.hamburger{display:flex!important}
           .g2,.g3{grid-template-columns:1fr!important}
           .g4{grid-template-columns:1fr 1fr!important}
           .footer-grid{grid-template-columns:1fr!important;gap:32px!important}
-          .hero-title{font-size:clamp(32px,8vw,68px)!important}
+          .hero-title{font-size:clamp(36px,9vw,54px)!important}
           .hero-btns{flex-direction:column!important}
           .booking-banner{flex-direction:column!important;align-items:flex-start!important}
           .booking-banner>div:last-child{width:100%!important;flex-direction:column!important}
           .booking-banner>div:last-child>a{width:100%!important;text-align:center!important;justify-content:center!important}
           .hero-pills{flex-wrap:wrap!important}
+          .hero-card{border-radius:14px}
         }
         @media(max-width:600px){.g4{grid-template-columns:1fr!important}}
       `}</style>
 
-      {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: scrolled ? "rgba(43,43,35,0.92)" : "transparent", backdropFilter: scrolled ? "blur(20px) saturate(1.3)" : "none", borderBottom: `1px solid ${scrolled ? "rgba(255,255,255,0.05)" : "transparent"}`, transition: "all 0.4s", padding: "0 var(--px)" }}>
+      {/* NAV — sits on the light hero-top background, switches to dark on scroll */}
+      <nav className={scrolled ? "nav-scrolled" : ""} style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: scrolled ? "rgba(43,43,35,0.92)" : "transparent", backdropFilter: scrolled ? "blur(20px) saturate(1.3)" : "none", borderBottom: `1px solid ${scrolled ? "rgba(255,255,255,0.05)" : "transparent"}`, transition: "all 0.4s", padding: "0 var(--px)" }}>
         <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
           <div style={{ cursor: "pointer", display: "flex", alignItems: "baseline" }} onClick={() => scrollTo("top")}>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 400, color: "var(--fg-light)", letterSpacing: "-0.02em" }}>Orvello</span>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 400, color: scrolled ? "var(--fg-light)" : "#262420", letterSpacing: "-0.02em", transition: "color 0.4s" }}>Orvello</span>
             <span style={{ width: 4, height: 4, background: "var(--accent)", display: "inline-block", marginLeft: 2, marginBottom: 2, borderRadius: 1 }} />
           </div>
           <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 28 }}>
             {["services", "about", "faq", "contact"].map(s => <button key={s} className="nav-link" onClick={() => scrollTo(s)}>{s}</button>)}
             <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" className="btn-accent" style={{ padding: "7px 16px", fontSize: 10, textDecoration: "none" }}>Book EPC</a>
           </div>
-          <button className="hamburger" style={{ display: "none", flexDirection: "column", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 4 }} onClick={() => setMenuOpen(true)}><Menu size={20} color="var(--fg-light)" /></button>
+          <button className="hamburger" style={{ display: "none", flexDirection: "column", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 4 }} onClick={() => setMenuOpen(true)}><Menu size={20} color={scrolled ? "var(--fg-light)" : "#262420"} /></button>
         </div>
       </nav>
 
       {menuOpen && (
         <div style={{ position: "fixed", inset: 0, background: "var(--bg)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 36 }}>
           <button onClick={() => setMenuOpen(false)} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", cursor: "pointer" }}><X size={24} color="var(--fg-light)" /></button>
-          {["services", "about", "faq", "contact"].map(s => <button key={s} className="nav-link" onClick={() => scrollTo(s)} style={{ fontSize: 16, color: "var(--fg-light)" }}>{s}</button>)}
+          {["services", "about", "faq", "contact"].map(s => <button key={s} className="nav-link" onClick={() => scrollTo(s)} style={{ fontSize: 16, color: "var(--fg-light)", opacity: 1 }}>{s}</button>)}
         </div>
       )}
 
-      {/* ═══ HERO ═══ */}
-      <section id="top" style={{ position: "relative", overflow: "hidden", minHeight: "94vh", display: "flex", alignItems: "center", padding: "160px var(--px) 100px" }}>
-        <HeroBg />
-        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", width: "100%", position: "relative", zIndex: 2 }}>
-          <Reveal>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
-              <span style={{ width: 8, height: 8, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Construction Consultancy</span>
-            </div>
-          </Reveal>
-          <Reveal delay={0.06}>
-            <h1 className="hero-title" style={{
-              fontFamily: "var(--font-display)", fontSize: "clamp(42px, 6.5vw, 78px)",
-              fontWeight: 300, letterSpacing: "-0.035em", lineHeight: 1.06,
-              maxWidth: 820, marginBottom: 32, color: "var(--fg-light)",
-            }}>
-              Safe design, compliant buildings, <em style={{ fontStyle: "italic", fontWeight: 300 }}>trusted advice.</em>
-            </h1>
-          </Reveal>
-          <Reveal delay={0.12}>
-            <p style={{ fontSize: 16, lineHeight: 1.75, color: "rgba(255,255,255,0.45)", maxWidth: 520, marginBottom: 40, fontWeight: 300 }}>
-              CDM Principal Designer services, fire risk assessments, domestic EPCs, and PAS2035 retrofit assessments — delivered with rigour across Northamptonshire and surrounding areas.
-            </p>
-          </Reveal>
-          <Reveal delay={0.18}>
-            <div className="hero-btns" style={{ display: "flex", gap: 14, marginBottom: 48 }}>
-              <button className="btn-accent" onClick={() => scrollTo("book")}>Get instant price <ArrowRight size={14} /></button>
-              <button className="btn-outline-dark" onClick={() => scrollTo("services")}>Our services</button>
-            </div>
-          </Reveal>
+      {/* ═══ HERO — Light top with nav, then rounded dark card ═══ */}
+      <section id="top" style={{ background: "var(--hero-top-bg)", padding: "0 clamp(12px, 2.5vw, 32px)", paddingBottom: "clamp(40px, 6vw, 80px)" }}>
+        {/* Spacer for fixed nav */}
+        <div style={{ height: 68 }} />
 
-          {/* Service pills */}
-          <Reveal delay={0.24}>
-            <div className="hero-pills" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
-              {["Domestic EPC", "PAS2035", "CDM 2015", "Fire Safety"].map(label => (
-                <div key={label} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "12px 20px",
-                  background: "rgba(240,238,232,0.08)", backdropFilter: "blur(4px)",
-                  border: "1px solid rgba(240,238,232,0.1)", borderRadius: 2,
-                  fontSize: 14, color: "var(--fg-light)", fontWeight: 300,
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5A7A5F" }} />
-                  {label}
-                </div>
-              ))}
-            </div>
-          </Reveal>
-          <Reveal delay={0.3}>
-            <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
-              {["Same-week availability", "From £75", "Fully insured"].map(item => (
-                <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>
-                  <Check size={14} style={{ color: "var(--accent)" }} />
-                  {item}
-                </div>
-              ))}
+        {/* Rounded dark card */}
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <Reveal delay={0.04}>
+            <div className="hero-card" style={{ position: "relative", minHeight: "80vh", display: "flex", alignItems: "center" }}>
+              <HeroBg />
+              <div style={{ position: "relative", zIndex: 2, width: "100%", padding: "clamp(56px, 8vw, 120px) clamp(36px, 6vw, 88px)" }}>
+                <Reveal delay={0.08}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32 }}>
+                    <span style={{ width: 8, height: 8, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Safe design · Trusted advice</span>
+                  </div>
+                </Reveal>
+                <Reveal delay={0.12}>
+                  <h1 className="hero-title" style={{
+                    fontFamily: "var(--font-display)", fontSize: "clamp(34px, 5vw, 58px)",
+                    fontWeight: 300, letterSpacing: "-0.03em", lineHeight: 1.12,
+                    maxWidth: 720, marginBottom: 28, color: "var(--fg-light)",
+                  }}>
+                    Safe design, compliant buildings, <em style={{ fontStyle: "italic", fontWeight: 300 }}>trusted advice.</em>
+                  </h1>
+                </Reveal>
+                <Reveal delay={0.16}>
+                  <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(255,255,255,0.45)", maxWidth: 500, marginBottom: 44, fontWeight: 300 }}>
+                    CDM Principal Designer services, fire risk assessments, domestic EPCs, and PAS2035 retrofit assessments — delivered with rigour across Northamptonshire and surrounding areas.
+                  </p>
+                </Reveal>
+                <Reveal delay={0.2}>
+                  <div className="hero-btns" style={{ display: "flex", gap: 14, marginBottom: 56 }}>
+                    <button className="btn-accent" onClick={() => scrollTo("book")}>Get instant price <ArrowRight size={14} /></button>
+                    <button className="btn-outline-dark" onClick={() => scrollTo("services")}>Our services</button>
+                  </div>
+                </Reveal>
+
+                {/* Service pills */}
+                <Reveal delay={0.24}>
+                  <div className="hero-pills" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+                    {["Domestic EPC", "PAS2035", "CDM 2015", "Fire Safety"].map(label => (
+                      <div key={label} style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "12px 20px",
+                        background: "rgba(240,238,232,0.08)", backdropFilter: "blur(4px)",
+                        border: "1px solid rgba(240,238,232,0.1)", borderRadius: 2,
+                        fontSize: 14, color: "var(--fg-light)", fontWeight: 300,
+                      }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5A7A5F" }} />
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                </Reveal>
+                <Reveal delay={0.28}>
+                  <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
+                    {["Same-week availability", "From £75", "Fully insured"].map(item => (
+                      <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>
+                        <Check size={14} style={{ color: "var(--accent)" }} />
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </Reveal>
+              </div>
             </div>
           </Reveal>
         </div>
@@ -542,7 +543,7 @@ export default function OrvelloSite() {
                 Trusted by architects, developers & housing providers across <em style={{ fontStyle: "italic" }}>Northamptonshire.</em>
               </h2>
               <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--muted)", fontWeight: 300 }}>
-                From single-property EPC assessments to multi-phase CDM appointments, we support projects at every scale. Our work spans private developments, social housing portfolios, local authority contracts, and commercial property management across Northamptonshire and surrounding areas — all delivered with consistent technical rigour.
+                From single-dwelling EPC assessments to multi-phase CDM appointments, we support clients at every scale. Our work spans private developments, social housing portfolios, local authority contracts, and commercial property management across Northamptonshire and surrounding areas — always with the same standard of technical rigour.
               </p>
             </Reveal>
             <Reveal delay={0.1}>
@@ -657,7 +658,6 @@ export default function OrvelloSite() {
 
       {/* ═══ PRICING ═══ */}
       <section id="book" style={{ padding: "100px var(--px)", background: "var(--bg)", color: "var(--fg-light)", position: "relative", overflow: "hidden" }}>
-        {/* Tight precision glow — not ambient flood */}
         <div style={{ position: "absolute", top: "15%", left: "50%", transform: "translateX(-50%)", width: "45%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.07) 0%, rgba(228,208,72,0.02) 40%, transparent 65%)", filter: "blur(40px)", pointerEvents: "none", animation: "lavaFloat 16s ease-in-out infinite alternate" }} />
         <div style={{ position: "absolute", bottom: "10%", right: "20%", width: "30%", height: "35%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.04) 0%, transparent 60%)", filter: "blur(35px)", pointerEvents: "none", animation: "lavaFloat 20s ease-in-out infinite alternate-reverse" }} />
         <LavaBg />
@@ -750,7 +750,7 @@ export default function OrvelloSite() {
             <div>
               <div className="mono-label" style={{ color: "rgba(255,255,255,0.2)", marginBottom: 16, fontSize: 10 }}>Contact</div>
               <a href="mailto:hello@orvello.co.uk" style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", marginBottom: 10, display: "block", textDecoration: "none", transition: "color 0.2s", fontWeight: 300 }} onMouseEnter={e => e.target.style.color = "var(--accent)"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.3)"}>hello@orvello.co.uk</a>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontWeight: 300 }}>Northampton, UK</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontWeight: 300 }}>Northamptonshire, UK</div>
             </div>
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
