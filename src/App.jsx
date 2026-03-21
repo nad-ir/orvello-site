@@ -1,289 +1,163 @@
-import { useState, useEffect, useRef } from "react";
-import { PenTool, Building2, Home, Landmark, KeyRound, Briefcase, Calendar, ArrowRight, Clock, Shield, Award, FileCheck, Zap } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowRight, ChevronDown, Menu, X, Shield, FileCheck, Zap, Clock, Check, Star, ChevronRight, Calendar, PenTool, Building2, Home, Landmark, KeyRound, Briefcase, ClipboardList } from "lucide-react";
 
 const SERVICES = [
-  {
-    id: "epc",
-    title: "Domestic EPCs",
-    subtitle: "Energy Performance Certificates",
-    bookable: true,
-    description:
-      "Fast, reliable Energy Performance Certificates for landlords, homeowners, and estate agents across Northamptonshire. Competitively priced with flexible booking and quick turnaround.",
-    items: [
-      "Residential EPC assessments",
-      "Landlord & letting agent packages",
-      "Estate agent partnerships",
-      "Bulk & portfolio pricing",
-      "Same-week availability",
-      "Digital certificate delivery",
-    ],
-  },
-  {
-    id: "retrofit",
-    title: "PAS2035 Retrofit Assessments",
-    subtitle: "Whole-house retrofit under PAS2035:2023",
-    bookable: true,
-    description:
-      "Retrofit assessments supporting government-funded energy efficiency schemes. We assess dwellings under the PAS2035 framework, producing detailed reports that inform the retrofit pathway for each property.",
-    items: [
-      "Retrofit assessments",
-      "Dwelling condition surveys",
-      "Medium-term improvement plans",
-      "ECO & GBIS scheme support",
-      "Batch assessment pricing",
-      "Social housing portfolios",
-    ],
-  },
-  {
-    id: "cdm",
-    title: "CDM Principal Designer",
-    subtitle: "Construction (Design & Management) Regulations 2015",
-    comingSoon: true,
-    description:
-      "We take on the Principal Designer role for your construction projects, managing pre-construction health and safety information, coordinating design teams, and ensuring CDM compliance from concept to completion.",
-    items: [
-      "Principal Designer appointments",
-      "Client advisory services",
-      "Pre-construction information packs",
-      "Health & Safety file compilation",
-      "Design risk management",
-      "Site inspections & audits",
-    ],
-  },
-  {
-    id: "fire",
-    title: "Fire Risk Assessments",
-    subtitle: "Regulatory Reform (Fire Safety) Order 2005",
-    comingSoon: true,
-    description:
-      "Comprehensive fire risk assessments for commercial properties, HMOs, and residential blocks. We identify hazards, evaluate risk, and provide actionable recommendations to keep your building compliant and your occupants safe.",
-    items: [
-      "Type 1, 2 & 3 assessments",
-      "HMO & residential block assessments",
-      "Commercial premises",
-      "Fire door inspections",
-      "Review & reassessment",
-      "Fire safety training",
-    ],
-  },
+  { id: "epc", tag: "01", title: "Domestic EPCs", subtitle: "Energy Performance Certificates", bookable: true, link: "https://tally.so/r/Gx0jJj", description: "Fast, reliable Energy Performance Certificates for landlords, homeowners, and estate agents across Northamptonshire. Competitively priced with flexible booking and quick turnaround.", items: ["Residential EPC assessments", "Landlord & letting agent packages", "Estate agent partnerships", "Bulk & portfolio pricing", "Same-week availability", "Digital certificate delivery"] },
+  { id: "retrofit", tag: "02", title: "PAS2035 Retrofit", subtitle: "Whole-house retrofit under PAS2035:2023", bookable: true, link: "https://tally.so/r/LZ0qVJ", description: "Retrofit assessments supporting government-funded energy efficiency schemes under the PAS2035 framework, producing detailed reports that inform the retrofit pathway.", items: ["Retrofit assessments", "Dwelling condition surveys", "Medium-term improvement plans", "ECO & GBIS scheme support", "Batch assessment pricing", "Social housing portfolios"] },
+  { id: "cdm", tag: "03", title: "CDM Principal Designer", subtitle: "CDM Regulations 2015", comingSoon: true, description: "We take on the Principal Designer role, managing pre-construction H&S information, coordinating design teams, and ensuring CDM compliance from concept to completion.", items: ["Principal Designer appointments", "Client advisory services", "Pre-construction info packs", "H&S file compilation", "Design risk management", "Site inspections & audits"] },
+  { id: "fire", tag: "04", title: "Fire Risk Assessments", subtitle: "Fire Safety Order 2005", comingSoon: true, description: "Comprehensive fire risk assessments for commercial properties, HMOs, and residential blocks. We identify hazards, evaluate risk, and provide actionable recommendations.", items: ["Type 1, 2 & 3 assessments", "HMO & residential blocks", "Commercial premises", "Fire door inspections", "Review & reassessment", "Fire safety training"] },
 ];
 
-function useInView(threshold = 0.15) {
+const FAQ_DATA = [
+  { q: "What is an EPC and do I need one?", a: "An Energy Performance Certificate rates your property's energy efficiency from A to G. You're legally required to have a valid EPC when selling, renting, or letting a property. EPCs are valid for 10 years." },
+  { q: "How long does an EPC assessment take?", a: "A typical domestic EPC assessment takes 30–60 minutes depending on the size of the property. We aim to have your certificate lodged and sent to you within 24–48 hours of the visit." },
+  { q: "What areas do you cover?", a: "We cover the whole of Northamptonshire, including Kettering, Wellingborough, Corby, Daventry, and Towcester, as well as surrounding areas by arrangement." },
+  { q: "What is a PAS2035 retrofit assessment?", a: "PAS2035 is the UK standard for retrofitting dwellings for improved energy efficiency. A retrofit assessment evaluates your property's current condition, then recommends a suitable improvement pathway. Required for ECO and GBIS schemes." },
+  { q: "What does a CDM Principal Designer do?", a: "Under CDM 2015, the Principal Designer plans, manages, and coordinates health and safety during the pre-construction phase. We ensure design risks are identified, produce pre-construction information packs, and compile the H&S file." },
+  { q: "Do you offer bulk or portfolio pricing?", a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Get in touch with your requirements for tailored pricing." },
+  { q: "How do I book an assessment?", a: "Book directly through our website using the booking buttons for EPC or retrofit assessments. For CDM and fire risk enquiries, use the contact form below." },
+];
+
+function useInView(threshold = 0.12) {
   const ref = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [vis, setVis] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          obs.unobserve(el);
-        }
-      },
-      { threshold }
-    );
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVis(true); obs.unobserve(el); } }, { threshold });
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
-  return [ref, isVisible];
+  return [ref, vis];
 }
 
-function FadeIn({ children, delay = 0, className = "" }) {
-  const [ref, isVisible] = useInView();
+function Reveal({ children, delay = 0, className = "", style = {} }) {
+  const [ref, vis] = useInView();
   return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(28px)",
-        transition: `opacity 0.7s cubic-bezier(.16,1,.3,1) ${delay}s, transform 0.7s cubic-bezier(.16,1,.3,1) ${delay}s`,
-      }}
-    >
+    <div ref={ref} className={className} style={{ ...style, opacity: vis ? 1 : 0, transform: vis ? "translateY(0)" : "translateY(28px)", transition: `opacity 0.8s cubic-bezier(.22,1,.36,1) ${delay}s, transform 0.8s cubic-bezier(.22,1,.36,1) ${delay}s` }}>
       {children}
     </div>
   );
 }
 
-function GrainOverlay() {
-  const containerRef = useRef(null);
+/* ─── HERO BG: Single large mouse-reactive orb + grain ─── */
+function HeroBg() {
+  const canvasRef = useRef(null);
+  const mouseRef = useRef({ x: 0.5, y: 0.3 });
+  const grainRef = useRef(null);
+
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const canvas = document.createElement("canvas");
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const w = 512;
-    const h = 512;
-    canvas.width = w;
-    canvas.height = h;
-    const imageData = ctx.createImageData(w, h);
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      const v = Math.random() * 255;
-      imageData.data[i] = v;
-      imageData.data[i + 1] = v;
-      imageData.data[i + 2] = v;
-      imageData.data[i + 3] = 22;
-    }
-    ctx.putImageData(imageData, 0, 0);
-    container.style.backgroundImage = `url(${canvas.toDataURL("image/png")})`;
-    container.style.backgroundRepeat = "repeat";
-    container.style.backgroundSize = "200px 200px";
+    let w, h, frame;
+
+    const resize = () => {
+      w = canvas.width = canvas.offsetWidth * 0.5;
+      h = canvas.height = canvas.offsetHeight * 0.5;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const onMouse = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseRef.current.x = (e.clientX - rect.left) / rect.width;
+      mouseRef.current.y = (e.clientY - rect.top) / rect.height;
+    };
+    window.addEventListener("mousemove", onMouse);
+
+    // Single large orb
+    let orbX = 0.4, orbY = 0.3;
+
+    const draw = (t) => {
+      ctx.fillStyle = "#272420";
+      ctx.fillRect(0, 0, w, h);
+
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      // Smooth follow
+      orbX += (mx - orbX) * 0.03;
+      orbY += (my - orbY) * 0.03;
+
+      const cx = orbX * w;
+      const cy = orbY * h;
+      const cr = Math.min(w, h) * 0.7;
+
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr);
+      grad.addColorStop(0, "rgba(228, 208, 72, 0.12)");
+      grad.addColorStop(0.3, "rgba(228, 208, 72, 0.06)");
+      grad.addColorStop(0.6, "rgba(228, 208, 72, 0.02)");
+      grad.addColorStop(1, "rgba(228, 208, 72, 0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      frame = requestAnimationFrame(draw);
+    };
+    frame = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", resize); window.removeEventListener("mousemove", onMouse); };
   }, []);
+
+  useEffect(() => {
+    const grainCanvas = grainRef.current;
+    if (!grainCanvas) return;
+    const gw = 512, gh = 512;
+    grainCanvas.width = gw; grainCanvas.height = gh;
+    const gctx = grainCanvas.getContext("2d");
+    const imageData = gctx.createImageData(gw, gh);
+    const d = imageData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = Math.random() * 255;
+      d[i] = v; d[i + 1] = v; d[i + 2] = v; d[i + 3] = 18;
+    }
+    gctx.putImageData(imageData, 0, 0);
+  }, []);
+
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: 999,
-        opacity: 0.9,
-        mixBlendMode: "overlay",
-      }}
-    />
+    <>
+      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0 }} />
+      <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, pointerEvents: "none", opacity: 0.6, mixBlendMode: "overlay" }} />
+    </>
   );
 }
 
-function HeroGrain() {
-  const containerRef = useRef(null);
+/* ─── CSS lava + grain overlay for non-hero dark sections ─── */
+function LavaBg() {
+  const grainRef = useRef(null);
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const w = 256;
-    const h = 256;
-    canvas.width = w;
-    canvas.height = h;
-    const imageData = ctx.createImageData(w, h);
-    for (let i = 0; i < imageData.data.length; i += 4) {
+    const c = grainRef.current;
+    if (!c) return;
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext("2d");
+    const img = ctx.createImageData(256, 256);
+    for (let i = 0; i < img.data.length; i += 4) {
       const v = Math.random() * 255;
-      imageData.data[i] = v;
-      imageData.data[i + 1] = v;
-      imageData.data[i + 2] = v;
-      imageData.data[i + 3] = 22;
+      img.data[i] = v; img.data[i+1] = v; img.data[i+2] = v; img.data[i+3] = 14;
     }
-    ctx.putImageData(imageData, 0, 0);
-    container.style.backgroundImage = `url(${canvas.toDataURL("image/png")})`;
-    container.style.backgroundRepeat = "repeat";
-    container.style.backgroundSize = "128px 128px";
+    ctx.putImageData(img, 0, 0);
   }, []);
   return (
-    <div
-      ref={containerRef}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-        zIndex: 1,
-        opacity: 0.6,
-        mixBlendMode: "multiply",
-      }}
-    />
+    <>
+      <div className="lava-blobs" />
+      <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", opacity: 0.5, mixBlendMode: "overlay", zIndex: 1 }} />
+    </>
   );
 }
-
-const FAQ_DATA = [
-  {
-    q: "What is an EPC and do I need one?",
-    a: "An Energy Performance Certificate rates your property's energy efficiency from A (most efficient) to G (least efficient). You're legally required to have a valid EPC when selling, renting, or letting a property. EPCs are valid for 10 years.",
-  },
-  {
-    q: "How long does an EPC assessment take?",
-    a: "A typical domestic EPC assessment takes 30–60 minutes depending on the size of the property. We aim to have your certificate lodged and sent to you within 24–48 hours of the visit.",
-  },
-  {
-    q: "What areas do you cover?",
-    a: "We're based in Northampton and cover the whole of Northamptonshire, including Kettering, Wellingborough, Corby, Daventry, and Towcester. We also work across surrounding counties by arrangement.",
-  },
-  {
-    q: "What is a PAS2035 retrofit assessment?",
-    a: "PAS2035 is the UK standard for retrofitting dwellings for improved energy efficiency. A retrofit assessment evaluates your property's current condition and energy performance, then recommends a suitable improvement pathway. It's required for government-funded schemes like ECO and GBIS.",
-  },
-  {
-    q: "What does a CDM Principal Designer do?",
-    a: "Under CDM 2015, the Principal Designer plans, manages, and coordinates health and safety during the pre-construction phase of a project. We ensure design risks are identified and managed, produce pre-construction information packs, and compile the health and safety file.",
-  },
-  {
-    q: "Do you offer bulk or portfolio pricing?",
-    a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Request a quote with your requirements and we'll provide tailored pricing.",
-  },
-  {
-    q: "How do I book an assessment?",
-    a: "You can book directly through our website using the booking buttons for EPC or retrofit assessments. For CDM and fire risk enquiries, use the contact form and we'll respond within one working day.",
-  },
-];
 
 function FaqAccordion() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openIdx, setOpenIdx] = useState(null);
   return (
     <div>
       {FAQ_DATA.map((item, i) => {
-        const isOpen = openIndex === i;
+        const open = openIdx === i;
         return (
-          <div key={i} style={{
-            borderBottom: "1px solid var(--border)",
-          }}>
-            <button
-              onClick={() => setOpenIndex(isOpen ? null : i)}
-              style={{
-                width: "100%",
-                padding: "22px 0",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 20,
-                fontFamily: "inherit",
-                textAlign: "left",
-              }}
-            >
-              <span style={{
-                fontSize: 16,
-                fontWeight: 500,
-                color: isOpen ? "var(--sage)" : "var(--ink)",
-                transition: "color 0.3s",
-                lineHeight: 1.4,
-              }}>
-                {item.q}
-              </span>
-              <span style={{
-                fontSize: 22,
-                color: "var(--sage)",
-                transition: "transform 0.35s cubic-bezier(.16,1,.3,1)",
-                transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
-                flexShrink: 0,
-                lineHeight: 1,
-                fontWeight: 300,
-              }}>
-                +
-              </span>
+          <div key={i} className="faq-item">
+            <button className="faq-btn" onClick={() => setOpenIdx(open ? null : i)}>
+              <span style={{ fontSize: 15, fontWeight: 400, transition: "color 0.2s", lineHeight: 1.4, color: open ? "var(--fg)" : "var(--muted)" }}>{item.q}</span>
+              <ChevronDown size={18} style={{ transition: "transform 0.35s", transform: open ? "rotate(180deg)" : "rotate(0)", color: "var(--muted)", flexShrink: 0 }} />
             </button>
-            <div style={{
-              maxHeight: isOpen ? 300 : 0,
-              overflow: "hidden",
-              transition: "max-height 0.4s cubic-bezier(.16,1,.3,1), opacity 0.3s",
-              opacity: isOpen ? 1 : 0,
-            }}>
-              <p style={{
-                fontSize: 14,
-                lineHeight: 1.75,
-                color: "var(--text-secondary)",
-                fontWeight: 300,
-                paddingBottom: 22,
-                maxWidth: 540,
-              }}>
-                {item.a}
-              </p>
+            <div style={{ maxHeight: open ? 300 : 0, overflow: "hidden", transition: "max-height 0.45s cubic-bezier(.22,1,.36,1), opacity 0.3s", opacity: open ? 1 : 0 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--muted)", fontWeight: 300, paddingBottom: 24, maxWidth: 560 }}>{item.a}</p>
             </div>
           </div>
         );
@@ -292,1262 +166,575 @@ function FaqAccordion() {
   );
 }
 
-function PricingCalculator() {
+/* ─── ACCORDION SERVICES ─── */
+function ServiceAccordion() {
+  const [openIdx, setOpenIdx] = useState(null);
+  const timeoutRef = useRef(null);
+
+  const handleEnter = (i) => {
+    clearTimeout(timeoutRef.current);
+    setOpenIdx(i);
+  };
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpenIdx(null), 300);
+  };
+
+  return (
+    <div>
+      {SERVICES.map((s, i) => {
+        const open = openIdx === i;
+        return (
+          <div key={s.id}
+            onMouseEnter={() => handleEnter(i)}
+            onMouseLeave={handleLeave}
+            onClick={() => setOpenIdx(open ? null : i)}
+            style={{
+              borderBottom: "1px solid var(--border-light)",
+              borderLeft: open ? "2px solid var(--accent)" : "2px solid transparent",
+              transition: "all 0.3s",
+              paddingLeft: open ? 24 : 0,
+              background: open ? "rgba(228,208,72,0.02)" : "transparent",
+              cursor: "pointer",
+            }}>
+            <div
+              style={{
+                width: "100%", padding: "28px 0",
+                display: "flex", alignItems: "center",
+                justifyContent: "space-between", gap: 20, textAlign: "left",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: open ? "var(--accent)" : "var(--muted)", letterSpacing: "0.05em", fontWeight: 400, minWidth: 24, transition: "color 0.3s" }}>{s.tag}</span>
+                <span style={{ fontFamily: "var(--font-display)", fontSize: "clamp(18px, 2.5vw, 26px)", fontWeight: open ? 400 : 300, color: "var(--fg)", transition: "all 0.3s", letterSpacing: "-0.02em" }}>{s.title}</span>
+                {s.comingSoon && <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8B7A2E", background: "rgba(228,208,72,0.18)", padding: "3px 10px", borderRadius: 2 }}>Available soon</span>}
+                {s.bookable && <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "#5A7A5F", background: "rgba(90,122,95,0.08)", padding: "3px 10px", borderRadius: 2 }}>Book now</span>}
+              </div>
+              <ChevronRight size={18} style={{ transition: "transform 0.35s cubic-bezier(.22,1,.36,1)", transform: open ? "rotate(90deg)" : "rotate(0)", color: open ? "var(--accent)" : "var(--muted)", flexShrink: 0 }} />
+            </div>
+            <div style={{
+              maxHeight: open ? 500 : 0, overflow: "hidden",
+              transition: "max-height 0.5s cubic-bezier(.22,1,.36,1), opacity 0.35s",
+              opacity: open ? 1 : 0,
+            }}>
+              <div style={{ paddingBottom: 32, paddingLeft: 40 }}>
+                <div className="mono-label" style={{ color: "var(--muted)", marginBottom: 10, fontSize: 10 }}>{s.subtitle}</div>
+                <p style={{ fontSize: 14, lineHeight: 1.8, color: "var(--muted)", maxWidth: 560, marginBottom: 24, fontWeight: 300 }}>{s.description}</p>
+                <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 28px", marginBottom: 24 }}>
+                  {s.items.map((item, j) => (
+                    <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--fg)", fontWeight: 300 }}>
+                      <Check size={13} style={{ color: "var(--accent)", flexShrink: 0 }} />{item}
+                    </div>
+                  ))}
+                </div>
+                {s.bookable ? (
+                  <a href={s.link} target="_blank" rel="noopener noreferrer" className="btn-accent" style={{ textDecoration: "none" }}>Book now <ArrowRight size={14} /></a>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 14px", background: "var(--accent-dim)", border: "1px solid rgba(228,208,72,0.15)", fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--accent)", fontWeight: 400, borderRadius: 2 }}><Clock size={12} /> Available soon</div>
+                    <button className="btn-outline-light" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>Register interest <ArrowRight size={13} /></button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function PricingCalc() {
   const [service, setService] = useState(null);
   const [bedrooms, setBedrooms] = useState(null);
   const [quantity, setQuantity] = useState(null);
-
-  const epcOptions = [
-    { key: "1-2", label: "1–2 bed" },
-    { key: "3", label: "3 bed" },
-    { key: "4", label: "4 bed" },
-    { key: "5+", label: "5+ bed" },
-  ];
   const epcPrices = { "1-2": 75, "3": 85, "4": 95, "5+": 110 };
-
-  const retrofitOptions = [
-    { key: "1", label: "1" },
-    { key: "2-10", label: "2–10" },
-    { key: "11-50", label: "11–50" },
-    { key: "50+", label: "50+" },
-  ];
-  const retrofitPrices = { "1": 200, "2-10": 180, "11-50": 160, "50+": "Quote" };
-
-  const getPrice = () => {
-    if (service === "epc" && bedrooms) return `£${epcPrices[bedrooms]}`;
-    if (service === "retrofit" && quantity) {
-      const p = retrofitPrices[quantity];
-      return typeof p === "number" ? `£${p}` : p;
-    }
-    return null;
-  };
-
-  const getLink = () => {
-    if (service === "epc") return "https://tally.so/r/Gx0jJj";
-    if (service === "retrofit") return "https://tally.so/r/LZ0qVJ";
-    return null;
-  };
-
-  const price = getPrice();
+  const retroPrices = { "1": 200, "2-10": 180, "11-50": 160, "50+": "Quote" };
+  const price = service === "epc" && bedrooms ? `£${epcPrices[bedrooms]}` : service === "retrofit" && quantity ? (typeof retroPrices[quantity] === "number" ? `£${retroPrices[quantity]}` : retroPrices[quantity]) : null;
   const isQuote = price === "Quote";
+  const link = service === "epc" ? "https://tally.so/r/Gx0jJj" : "https://tally.so/r/LZ0qVJ";
 
-  const pillStyle = (active) => ({
-    padding: "14px 0",
-    background: active ? "white" : "rgba(255,255,255,0.08)",
-    color: active ? "var(--sage-deep)" : "rgba(255,255,255,0.7)",
-    border: active ? "1.5px solid white" : "1.5px solid rgba(255,255,255,0.15)",
-    fontWeight: active ? 600 : 400,
-    fontSize: 14,
-    cursor: "pointer",
-    transition: "all 0.25s",
-    fontFamily: "inherit",
-    letterSpacing: "0.01em",
-    textAlign: "center",
-    flex: 1,
-    minWidth: 0,
-  });
+  const Pill = ({ active, children, onClick }) => (
+    <button onClick={onClick} style={{ padding: "12px 0", flex: 1, textAlign: "center", background: active ? "var(--accent)" : "transparent", color: active ? "var(--bg)" : "rgba(255,255,255,0.45)", border: active ? "1px solid var(--accent)" : "1px solid rgba(255,255,255,0.1)", fontWeight: active ? 500 : 300, fontSize: 13, cursor: "pointer", transition: "all 0.25s", fontFamily: "var(--font-mono)", letterSpacing: "0.02em", borderRadius: 2 }}>{children}</button>
+  );
 
   return (
-    <div style={{
-      background: "rgba(0,0,0,0.15)",
-      backdropFilter: "blur(8px)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      padding: "clamp(28px, 4vw, 44px)",
-    }}>
-      {/* Step 1: Service */}
-      <div style={{ marginBottom: 28 }}>
-        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>
-          1. What do you need?
-        </label>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button style={pillStyle(service === "epc")} onClick={() => { setService("epc"); setBedrooms(null); setQuantity(null); }}>Domestic EPC</button>
-          <button style={pillStyle(service === "retrofit")} onClick={() => { setService("retrofit"); setBedrooms(null); setQuantity(null); }}>Retrofit Assessment</button>
-          <button style={pillStyle(service === "cdm")} onClick={() => { setService("cdm"); setBedrooms(null); setQuantity(null); }}>CDM / Fire Risk</button>
+    <div style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(28px) saturate(1.2)", border: "1px solid rgba(255,255,255,0.14)", padding: "clamp(24px,4vw,40px)", borderRadius: 10, boxShadow: "0 4px 40px rgba(0,0,0,0.15)" }}>
+      <div style={{ marginBottom: 24 }}>
+        <label className="mono-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 10, display: "block" }}>01 — Select service</label>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Pill active={service === "epc"} onClick={() => { setService("epc"); setBedrooms(null); setQuantity(null); }}>Domestic EPC</Pill>
+          <Pill active={service === "retrofit"} onClick={() => { setService("retrofit"); setBedrooms(null); setQuantity(null); }}>Retrofit</Pill>
+          <Pill active={service === "cdm"} onClick={() => { setService("cdm"); setBedrooms(null); setQuantity(null); }}>CDM / FRA</Pill>
         </div>
       </div>
-
-      {/* Step 2: Conditional */}
       {service === "epc" && (
-        <div style={{ marginBottom: 28 }}>
-          <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>
-            2. How many bedrooms?
-          </label>
-          <div style={{ display: "flex", gap: 10 }}>
-            {epcOptions.map((opt) => (
-              <button key={opt.key} style={pillStyle(bedrooms === opt.key)} onClick={() => setBedrooms(opt.key)}>{opt.label}</button>
-            ))}
-          </div>
+        <div style={{ marginBottom: 24 }}>
+          <label className="mono-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 10, display: "block" }}>02 — Bedrooms</label>
+          <div style={{ display: "flex", gap: 8 }}>{[["1-2", "1–2 bed"], ["3", "3 bed"], ["4", "4 bed"], ["5+", "5+ bed"]].map(([k, l]) => <Pill key={k} active={bedrooms === k} onClick={() => setBedrooms(k)}>{l}</Pill>)}</div>
         </div>
       )}
-
       {service === "retrofit" && (
-        <div style={{ marginBottom: 28 }}>
-          <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>
-            2. How many properties?
-          </label>
-          <div style={{ display: "flex", gap: 10 }}>
-            {retrofitOptions.map((opt) => (
-              <button key={opt.key} style={pillStyle(quantity === opt.key)} onClick={() => setQuantity(opt.key)}>{opt.label}</button>
-            ))}
-          </div>
+        <div style={{ marginBottom: 24 }}>
+          <label className="mono-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 10, display: "block" }}>02 — Properties</label>
+          <div style={{ display: "flex", gap: 8 }}>{[["1", "1"], ["2-10", "2–10"], ["11-50", "11–50"], ["50+", "50+"]].map(([k, l]) => <Pill key={k} active={quantity === k} onClick={() => setQuantity(k)}>{l}</Pill>)}</div>
         </div>
       )}
-
-      {service === "cdm" && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{
-            padding: "16px 22px",
-            background: "rgba(200,107,60,0.1)",
-            border: "1px solid rgba(200,107,60,0.2)",
-            fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 300, lineHeight: 1.6,
-          }}>
-            CDM and fire risk services are available soon. Register your interest and we'll scope your requirements within 48 hours.
-          </div>
-        </div>
-      )}
-
-      {/* Result */}
+      {service === "cdm" && <div style={{ padding: "14px 18px", background: "rgba(228,208,72,0.06)", border: "1px solid rgba(228,208,72,0.12)", fontSize: 14, color: "rgba(255,255,255,0.45)", marginBottom: 24, lineHeight: 1.6, fontWeight: 300, borderRadius: 2 }}>CDM and fire risk services available soon. Register your interest and we'll scope your requirements within 48 hours.</div>}
       {price && (
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "20px 0 0", borderTop: "1px solid rgba(255,255,255,0.1)",
-          flexWrap: "wrap", gap: 16,
-        }}>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>
-              {isQuote ? "Bespoke pricing" : "Your price"}
-            </span>
-            <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 36, color: "white", marginTop: 4 }}>
-              {isQuote ? "Get a quote" : price}
-            </div>
-            {!isQuote && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-              {service === "retrofit" ? "per property · inc. survey & report" : "inc. visit, lodgement & digital delivery"}
-            </span>}
+            <div className="mono-label" style={{ color: "rgba(255,255,255,0.35)" }}>{isQuote ? "Bespoke pricing" : "Your price"}</div>
+            <div style={{ fontFamily: "var(--font-display)", fontSize: 38, fontWeight: 300, color: "var(--fg-light)", marginTop: 4 }}>{isQuote ? "Get a quote" : price}</div>
+            {!isQuote && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>{service === "retrofit" ? "per property · inc. survey & report" : "inc. visit, lodgement & certificate"}</span>}
           </div>
-          <a
-            href={isQuote ? "#contact" : getLink()}
-            target={isQuote ? "_self" : "_blank"}
-            rel="noopener noreferrer"
-            onClick={isQuote ? (e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); } : undefined}
-            style={{
-              background: "white", color: "var(--sage-deep)", border: "none",
-              padding: "16px 32px", fontSize: 14, fontWeight: 700,
-              letterSpacing: "0.05em", textTransform: "uppercase",
-              textDecoration: "none", cursor: "pointer",
-              transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
-              display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "inherit",
-            }}
-          >
-            {isQuote ? "Speak to us" : "Continue booking"}
-            <ArrowRight size={16} />
-          </a>
-          {!isQuote && <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 8, width: "100%", textAlign: "right" }}>Takes less than 1 minute · No commitment</p>}
+          <a href={isQuote ? "#contact" : link} target={isQuote ? "_self" : "_blank"} rel="noopener noreferrer" onClick={isQuote ? (e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); } : undefined} className="btn-accent" style={{ textDecoration: "none" }}>{isQuote ? "Speak to us" : "Continue booking"} <ArrowRight size={14} /></a>
         </div>
       )}
-
       {service === "cdm" && (
-        <div style={{
-          display: "flex", justifyContent: "flex-end",
-          paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: 0,
-        }}>
-          <button
-            onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-            style={{
-              background: "white", color: "var(--sage-deep)", border: "none",
-              padding: "16px 32px", fontSize: 14, fontWeight: 700,
-              letterSpacing: "0.05em", textTransform: "uppercase",
-              cursor: "pointer", transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
-              display: "inline-flex", alignItems: "center", gap: 10, fontFamily: "inherit",
-            }}
-          >
-            Register interest
-            <ArrowRight size={16} />
-          </button>
-          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 8, width: "100%", textAlign: "right" }}>We'll respond within 48 hours</p>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20, display: "flex", justifyContent: "flex-end" }}>
+          <button className="btn-accent" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>Register interest <ArrowRight size={14} /></button>
         </div>
       )}
     </div>
   );
 }
 
+/* ═══════════════ MAIN ═══════════════ */
 export default function OrvelloSite() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeService, setActiveService] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const scrollTo = (id) => {
-    setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollTo = (id) => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif", background: "#F6F5F0", color: "#1A1A18", minHeight: "100vh", overflowX: "hidden" }}>
-      <GrainOverlay />
+    <div className="orvello-root">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,300;12..96,400;12..96,500;12..96,600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+        :root{
+          --bg:#272420;--bg-light:#F7F6F3;--bg-off:#EDECE8;
+          --fg:#1A1A18;--fg-light:#F0EEE8;
+          --muted:#8A8A80;--muted-light:#B0B0A8;
+          --accent:#E4D048;--accent-dim:rgba(228,208,72,0.10);
+          --border-light:#DDDBD5;--border-dark:rgba(255,255,255,0.10);
+          --font-display:'Bricolage Grotesque',sans-serif;
+          --font-body:'Bricolage Grotesque',sans-serif;
+          --font-mono:'IBM Plex Mono',monospace;
+          --max-w:1240px;--px:clamp(20px,5vw,72px);
+        }
+        .orvello-root{font-family:var(--font-body);background:var(--bg-light);color:var(--fg);min-height:100vh;overflow-x:hidden}
+        .nav-link{font-family:var(--font-mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.4);text-decoration:none;cursor:pointer;transition:color 0.2s;background:none;border:none;font-weight:400;padding:0}
+        .nav-link:hover{color:rgba(255,255,255,0.8)}
+        .btn-accent{display:inline-flex;align-items:center;gap:10px;background:var(--accent);color:var(--bg);border:none;padding:14px 28px;font-size:12px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.3s cubic-bezier(.22,1,.36,1);font-family:var(--font-mono);border-radius:2px}
+        .btn-accent:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 24px rgba(228,208,72,0.18)}
+        .btn-outline-dark{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--fg-light);border:1px solid rgba(255,255,255,0.18);padding:14px 28px;font-size:12px;font-weight:300;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;font-family:var(--font-mono);text-decoration:none;border-radius:2px}
+        .btn-outline-dark:hover{border-color:var(--accent);color:var(--accent)}
+        .btn-outline-light{display:inline-flex;align-items:center;gap:10px;background:transparent;color:var(--fg);border:1px solid var(--border-light);padding:14px 28px;font-size:12px;font-weight:400;letter-spacing:0.04em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;font-family:var(--font-mono);text-decoration:none;border-radius:2px}
+        .btn-outline-light:hover{border-color:var(--fg)}
+        .mono-label{font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;font-weight:400}
+        .section-tag{font-family:var(--font-mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;font-weight:400;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+        .section-tag::before{content:'';display:inline-block;width:32px;height:1px;background:currentColor;opacity:0.3}
+        .section-heading{font-family:var(--font-display);font-weight:300;letter-spacing:-0.03em;line-height:1.08}
+        .faq-item{border-bottom:1px solid var(--border-light)}
+        .faq-btn{width:100%;padding:24px 0;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:20px;font-family:inherit;text-align:left}
+        .form-input{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.1);padding:14px 18px;color:var(--fg-light);font-size:14px;font-family:var(--font-body);font-weight:300;outline:none;transition:border-color 0.3s;border-radius:2px}
+        .form-input:focus{border-color:var(--accent)}
+        .form-input::placeholder{color:rgba(255,255,255,0.2)}
+        .cred-card{background:white;border:1px solid var(--border-light);padding:28px;border-radius:4px;transition:all 0.35s cubic-bezier(.22,1,.36,1);cursor:default;display:flex;flex-direction:column;height:100%}
+        .cred-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.06);border-color:rgba(228,208,72,0.3)}
+        .lava-blobs{position:absolute;inset:0;overflow:hidden;z-index:0}
+        .lava-blobs::before,.lava-blobs::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);animation:lavaFloat 12s ease-in-out infinite alternate}
+        .lava-blobs::before{width:60%;height:60%;top:-10%;left:10%;background:radial-gradient(circle,rgba(228,208,72,0.08) 0%,transparent 70%);animation-duration:14s}
+        .lava-blobs::after{width:50%;height:50%;bottom:-5%;right:5%;background:radial-gradient(circle,rgba(228,208,72,0.06) 0%,transparent 70%);animation-duration:18s;animation-delay:-4s}
+        @keyframes lavaFloat{0%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-20px) scale(1.1)}100%{transform:translate(-20px,15px) scale(0.95)}}
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-
-        :root {
-          --ink: #1A1A18;
-          --chalk: #F6F5F0;
-          --sage: #4A5D4F;
-          --sage-deep: #3A4B3E;
-          --sage-light: #E4EAE5;
-          --sage-mid: #7A9580;
-          --warm: #C86B3C;
-          --warm-light: #FAEEE6;
-          --border: #DDDBD5;
-          --text-secondary: #6B6B66;
-          --cream: #EDEBD6;
+        .marquee-track{display:flex;gap:48px;animation:marquee 35s linear infinite;width:max-content}
+        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        .marquee-item{font-family:var(--font-display);font-size:clamp(24px,3.5vw,38px);color:var(--border-light);white-space:nowrap;font-style:italic;font-weight:300;user-select:none}
+        @media(max-width:900px){
+          .desktop-nav{display:none!important}.hamburger{display:flex!important}
+          .g2,.g3{grid-template-columns:1fr!important}
+          .g4{grid-template-columns:1fr 1fr!important}
+          .footer-grid{grid-template-columns:1fr!important;gap:32px!important}
+          .hero-title{font-size:clamp(32px,8vw,68px)!important}
+          .hero-btns{flex-direction:column!important}
+          .booking-banner{flex-direction:column!important;align-items:flex-start!important}
+          .booking-banner>div:last-child{width:100%!important;flex-direction:column!important}
+          .booking-banner>div:last-child>a{width:100%!important;text-align:center!important;justify-content:center!important}
+          .hero-pills{flex-wrap:wrap!important}
         }
-
-        .nav-link {
-          font-size: 13px;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--text-secondary);
-          text-decoration: none;
-          cursor: pointer;
-          transition: color 0.25s;
-          font-weight: 500;
-          background: none;
-          border: none;
-          font-family: inherit;
-        }
-        .nav-link:hover { color: var(--sage); }
-
-        .btn-primary {
-          background: var(--sage);
-          color: var(--chalk);
-          border: none;
-          padding: 16px 36px;
-          font-size: 14px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: all 0.35s cubic-bezier(.16,1,.3,1);
-          font-family: inherit;
-          text-transform: uppercase;
-          position: relative;
-          overflow: hidden;
-        }
-        .btn-primary:hover { background: var(--sage-deep); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,107,60,0.25); }
-
-        .btn-outline {
-          background: transparent;
-          color: var(--sage);
-          border: 1.5px solid var(--sage);
-          padding: 16px 36px;
-          font-size: 14px;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          cursor: pointer;
-          transition: all 0.35s cubic-bezier(.16,1,.3,1);
-          font-family: inherit;
-          text-transform: uppercase;
-        }
-        .btn-outline:hover { background: var(--sage); color: var(--chalk); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,107,60,0.15); }
-
-        .service-tab {
-          padding: 18px 24px;
-          border: none;
-          background: transparent;
-          cursor: pointer;
-          text-align: left;
-          font-family: inherit;
-          font-size: 15px;
-          color: var(--text-secondary);
-          transition: all 0.3s;
-          border-left: 2px solid var(--border);
-          width: 100%;
-          font-weight: 400;
-        }
-        .service-tab:hover { color: var(--ink); border-left-color: var(--sage-mid); }
-        .service-tab.active {
-          color: var(--ink);
-          font-weight: 600;
-          border-left-color: var(--sage);
-          background: var(--sage-light);
-        }
-
-        .credential-card {
-          padding: 32px;
-          background: rgba(255,255,255,0.5);
-          backdrop-filter: blur(8px);
-          border: 1px solid var(--border);
-          transition: all 0.35s cubic-bezier(.16,1,.3,1);
-        }
-        .credential-card:hover { border-color: var(--sage-mid); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.06); }
-
-        .credential-card-v2:hover {
-          border-color: var(--sage-mid) !important;
-          transform: translateY(-4px);
-          box-shadow: 0 16px 40px rgba(0,0,0,0.08);
-        }
-        .credential-card-v2:hover > div:first-child {
-          height: 5px !important;
-        }
-
-        .stat-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          padding: 10px 20px;
-          background: rgba(255,255,255,0.55);
-          backdrop-filter: blur(6px);
-          border: 1px solid var(--border);
-          font-size: 14px;
-          color: var(--ink);
-          font-weight: 500;
-          transition: all 0.3s;
-        }
-        .stat-pill:hover { background: rgba(255,255,255,0.8); }
-        .stat-pill .dot {
-          width: 6px; height: 6px; border-radius: 50%;
-          background: var(--sage);
-        }
-
-        .marquee-track {
-          display: flex;
-          gap: 48px;
-          animation: marquee 30s linear infinite;
-          width: max-content;
-        }
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .marquee-item {
-          font-family: 'Instrument Serif', serif;
-          font-size: clamp(28px, 4vw, 44px);
-          color: var(--border);
-          white-space: nowrap;
-          font-style: italic;
-          user-select: none;
-        }
-
-        .hamburger {
-          display: none;
-          flex-direction: column;
-          gap: 5px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          padding: 4px;
-        }
-        .hamburger span {
-          display: block;
-          width: 22px;
-          height: 1.5px;
-          background: var(--ink);
-          transition: all 0.3s;
-        }
-
-        @media (max-width: 768px) {
-          .hamburger { display: flex; }
-          .desktop-nav { display: none !important; }
-          .mobile-menu {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--chalk);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 32px;
-          }
-          .mobile-menu .nav-link { font-size: 18px; }
-          .mobile-close {
-            position: absolute;
-            top: 24px; right: 24px;
-            background: none; border: none;
-            font-size: 28px; cursor: pointer;
-            color: var(--ink);
-          }
-          .hero-title { font-size: clamp(36px, 9vw, 64px) !important; }
-          .hero-subtitle { font-size: 16px !important; }
-          .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
-          .grid-2 { grid-template-columns: 1fr !important; }
-          .grid-3 { grid-template-columns: 1fr !important; }
-          .grid-4 { grid-template-columns: 1fr !important; }
-          .service-detail-grid { grid-template-columns: 1fr !important; }
-          .service-detail-grid > div:last-child { padding: 24px 0 0 0 !important; }
-          .hero-buttons { flex-direction: column !important; align-items: stretch !important; }
-          .footer-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
-          .stat-pills { flex-wrap: wrap !important; }
-          .intro-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
-          .hero-pad { padding: 140px 20px 80px !important; }
-          .booking-banner-grid { flex-direction: column !important; align-items: flex-start !important; }
-          .booking-banner-grid > div:last-child { width: 100% !important; flex-direction: column !important; }
-          .booking-banner-grid > div:last-child > a { width: 100% !important; text-align: center !important; justify-content: center !important; }
-          .process-line { display: none !important; }
-        }
+        @media(max-width:600px){.g4{grid-template-columns:1fr!important}}
       `}</style>
 
       {/* NAV */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        background: scrolled ? "rgba(246,245,240,0.92)" : "transparent",
-        backdropFilter: scrolled ? "blur(16px)" : "none",
-        borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
-        transition: "all 0.4s",
-        padding: "0 clamp(20px, 4vw, 64px)",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 2, cursor: "pointer" }} onClick={() => scrollTo("top")}>
-            <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 26, fontWeight: 400, color: "var(--sage)", letterSpacing: "-0.01em" }}><em>O</em>rvello</span>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: scrolled ? "rgba(43,43,35,0.92)" : "transparent", backdropFilter: scrolled ? "blur(20px) saturate(1.3)" : "none", borderBottom: `1px solid ${scrolled ? "rgba(255,255,255,0.05)" : "transparent"}`, transition: "all 0.4s", padding: "0 var(--px)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
+          <div style={{ cursor: "pointer", display: "flex", alignItems: "baseline" }} onClick={() => scrollTo("top")}>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 400, color: "var(--fg-light)", letterSpacing: "-0.02em" }}>Orvello</span>
+            <span style={{ width: 4, height: 4, background: "var(--accent)", display: "inline-block", marginLeft: 2, marginBottom: 2, borderRadius: 1 }} />
           </div>
-          <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 36 }}>
-            <button className="nav-link" onClick={() => scrollTo("services")}>Services</button>
-            <button className="nav-link" onClick={() => scrollTo("about")}>About</button>
-            <button className="nav-link" onClick={() => scrollTo("credentials")}>Credentials</button>
-            <button className="nav-link" onClick={() => scrollTo("contact")}>Contact</button>
-            <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" style={{
-              background: "var(--sage)", color: "white", border: "none",
-              padding: "8px 18px", fontSize: 12, fontWeight: 600,
-              letterSpacing: "0.05em", textTransform: "uppercase",
-              textDecoration: "none", cursor: "pointer",
-              transition: "all 0.3s", fontFamily: "inherit",
-            }}
-              onMouseEnter={(e) => { e.target.style.background = "var(--sage-deep)"; e.target.style.boxShadow = "0 4px 12px rgba(200,107,60,0.2)"; }}
-              onMouseLeave={(e) => { e.target.style.background = "var(--sage)"; e.target.style.boxShadow = "none"; }}
-            >Book EPC</a>
+          <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 28 }}>
+            {["services", "about", "faq", "contact"].map(s => <button key={s} className="nav-link" onClick={() => scrollTo(s)}>{s}</button>)}
+            <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" className="btn-accent" style={{ padding: "7px 16px", fontSize: 10, textDecoration: "none" }}>Book EPC</a>
           </div>
-          <button className="hamburger" onClick={() => setMenuOpen(true)}>
-            <span /><span /><span />
-          </button>
+          <button className="hamburger" style={{ display: "none", flexDirection: "column", gap: 5, background: "none", border: "none", cursor: "pointer", padding: 4 }} onClick={() => setMenuOpen(true)}><Menu size={20} color="var(--fg-light)" /></button>
         </div>
       </nav>
 
       {menuOpen && (
-        <div className="mobile-menu">
-          <button className="mobile-close" onClick={() => setMenuOpen(false)}>×</button>
-          <button className="nav-link" onClick={() => scrollTo("services")}>Services</button>
-          <button className="nav-link" onClick={() => scrollTo("about")}>About</button>
-          <button className="nav-link" onClick={() => scrollTo("credentials")}>Credentials</button>
-          <button className="nav-link" onClick={() => scrollTo("contact")}>Contact</button>
+        <div style={{ position: "fixed", inset: 0, background: "var(--bg)", zIndex: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 36 }}>
+          <button onClick={() => setMenuOpen(false)} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", cursor: "pointer" }}><X size={24} color="var(--fg-light)" /></button>
+          {["services", "about", "faq", "contact"].map(s => <button key={s} className="nav-link" onClick={() => scrollTo(s)} style={{ fontSize: 16, color: "var(--fg-light)" }}>{s}</button>)}
         </div>
       )}
 
-      {/* HERO */}
-      <section id="top" className="hero-pad" style={{
-        padding: "180px clamp(20px, 4vw, 64px) 100px",
-        position: "relative",
-        overflow: "hidden",
-        background: "linear-gradient(165deg, #F6F5F0 0%, #EBE9E0 40%, #E4EAE5 70%, #DDE5DF 100%)",
-      }}>
-        {/* Animated floating orbs */}
-        <style>{`
-          @keyframes float1 {
-            0% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(120px, -60px) scale(1.3); }
-            50% { transform: translate(40px, 40px) scale(0.85); }
-            75% { transform: translate(-80px, -20px) scale(1.15); }
-            100% { transform: translate(0, 0) scale(1); }
-          }
-          @keyframes float2 {
-            0% { transform: translate(0, 0) scale(1); }
-            30% { transform: translate(-100px, 80px) scale(1.25); }
-            60% { transform: translate(60px, -50px) scale(0.8); }
-            100% { transform: translate(0, 0) scale(1); }
-          }
-          @keyframes float3 {
-            0% { transform: translate(0, 0) scale(1); }
-            40% { transform: translate(90px, 70px) scale(1.35); }
-            70% { transform: translate(-60px, -40px) scale(0.9); }
-            100% { transform: translate(0, 0) scale(1); }
-          }
-          @keyframes float4 {
-            0% { transform: translate(0, 0) scale(1); }
-            35% { transform: translate(-70px, -80px) scale(1.2); }
-            65% { transform: translate(50px, 60px) scale(0.85); }
-            100% { transform: translate(0, 0) scale(1); }
-          }
-          @keyframes float5 {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(100px, -40px) scale(1.4); }
-            100% { transform: translate(0, 0) scale(1); }
-          }
-          @keyframes morphBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-        `}</style>
-        {/* Morphing gradient base */}
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-          background: "linear-gradient(135deg, #F6F5F0, #E4EAE5, #DDE5DF, #EBE9E0, #E8E3D8, #E4EAE5)",
-          backgroundSize: "300% 300%",
-          animation: "morphBg 15s ease-in-out infinite",
-          pointerEvents: "none",
-        }} />
-        {/* Large sage orb - top right */}
-        <div style={{
-          position: "absolute", top: "-10%", right: "-5%",
-          width: 600, height: 600, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(74,93,79,0.22) 0%, rgba(74,93,79,0.05) 50%, transparent 70%)",
-          animation: "float1 8s ease-in-out infinite",
-          filter: "blur(40px)",
-          pointerEvents: "none",
-        }} />
-        {/* Warm orb - mid left */}
-        <div style={{
-          position: "absolute", top: "20%", left: "-5%",
-          width: 600, height: 600, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,107,60,0.3) 0%, rgba(200,107,60,0.1) 40%, transparent 70%)",
-          animation: "float2 10s ease-in-out infinite",
-          filter: "blur(30px)",
-          pointerEvents: "none",
-        }} />
-        {/* Deep sage orb - bottom centre */}
-        <div style={{
-          position: "absolute", bottom: "-15%", right: "25%",
-          width: 700, height: 700, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(58,75,62,0.18) 0%, rgba(58,75,62,0.04) 50%, transparent 70%)",
-          animation: "float3 12s ease-in-out infinite",
-          filter: "blur(50px)",
-          pointerEvents: "none",
-        }} />
-        {/* Small accent orb - top left */}
-        <div style={{
-          position: "absolute", top: "10%", left: "30%",
-          width: 300, height: 300, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(74,93,79,0.15) 0%, transparent 60%)",
-          animation: "float4 7s ease-in-out infinite",
-          filter: "blur(25px)",
-          pointerEvents: "none",
-        }} />
-        {/* Warm highlight orb - bottom left */}
-        <div style={{
-          position: "absolute", bottom: "5%", left: "15%",
-          width: 450, height: 450, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,107,60,0.25) 0%, rgba(200,107,60,0.08) 40%, transparent 65%)",
-          animation: "float5 9s ease-in-out infinite",
-          filter: "blur(25px)",
-          pointerEvents: "none",
-        }} />
-        {/* Extra warm orb - top right overlap */}
-        <div style={{
-          position: "absolute", top: "5%", right: "15%",
-          width: 400, height: 400, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(200,107,60,0.18) 0%, transparent 60%)",
-          animation: "float1 11s ease-in-out infinite",
-          filter: "blur(20px)",
-          pointerEvents: "none",
-        }} />
-        {/* Subtle diagonal lines */}
-        <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0.035, pointerEvents: "none" }}>
-          {[...Array(20)].map((_, i) => (
-            <line key={i} x1={`${i * 6}%`} y1="0" x2={`${i * 6 + 20}%`} y2="100%" stroke="var(--sage)" strokeWidth="0.5" />
-          ))}
-        </svg>
-        {/* Hero-only grain overlay */}
-        <HeroGrain />
-
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 2 }}>
-          <FadeIn>
-            <p style={{
-              fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase",
-              color: "var(--sage)", fontWeight: 600, marginBottom: 28,
-              display: "flex", alignItems: "center", gap: 12,
-            }}>
-              <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-              Construction Consultancy
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <h1 className="hero-title" style={{
-              fontFamily: "'Instrument Serif', serif",
-              fontSize: "clamp(44px, 6vw, 78px)",
-              fontWeight: 400,
-              lineHeight: 1.06,
-              letterSpacing: "-0.025em",
-              maxWidth: 820,
-              color: "var(--ink)",
-            }}>
-              Safe design,<br />
-              compliant buildings,<br />
-              <span style={{ color: "var(--sage)", fontStyle: "italic" }}>trusted advice.</span>
-            </h1>
-          </FadeIn>
-          <FadeIn delay={0.2}>
-            <p className="hero-subtitle" style={{
-              fontSize: 18, lineHeight: 1.7, color: "var(--text-secondary)",
-              maxWidth: 520, marginTop: 36, fontWeight: 300,
-            }}>
-              CDM Principal Designer services, fire risk assessments, domestic EPCs, and PAS2035 retrofit assessments — delivered with rigour and clarity from Northampton.
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.3}>
-            <div className="hero-buttons" style={{ display: "flex", gap: 16, marginTop: 48 }}>
-              <button className="btn-primary" onClick={() => scrollTo("book")}>Get instant price</button>
-              <button className="btn-outline" onClick={() => scrollTo("services")}>View services</button>
+      {/* ═══ HERO ═══ */}
+      <section id="top" style={{ position: "relative", overflow: "hidden", minHeight: "94vh", display: "flex", alignItems: "center", padding: "160px var(--px) 100px" }}>
+        <HeroBg />
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", width: "100%", position: "relative", zIndex: 2 }}>
+          <Reveal>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
+              <span style={{ width: 8, height: 8, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Construction Consultancy</span>
             </div>
-          </FadeIn>
-          <FadeIn delay={0.4}>
-            <div className="stat-pills" style={{ display: "flex", gap: 12, marginTop: 56, flexWrap: "wrap" }}>
-              {["Domestic EPC", "PAS2035", "CDM 2015", "Fire Safety"].map((label) => (
-                <div className="stat-pill" key={label}>
-                  <span className="dot" />
+          </Reveal>
+          <Reveal delay={0.06}>
+            <h1 className="hero-title" style={{
+              fontFamily: "var(--font-display)", fontSize: "clamp(42px, 6.5vw, 78px)",
+              fontWeight: 300, letterSpacing: "-0.035em", lineHeight: 1.06,
+              maxWidth: 820, marginBottom: 32, color: "var(--fg-light)",
+            }}>
+              Safe design, compliant buildings, <em style={{ fontStyle: "italic", fontWeight: 300 }}>trusted advice.</em>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <p style={{ fontSize: 16, lineHeight: 1.75, color: "rgba(255,255,255,0.45)", maxWidth: 520, marginBottom: 40, fontWeight: 300 }}>
+              CDM Principal Designer services, fire risk assessments, domestic EPCs, and PAS2035 retrofit assessments — delivered with rigour across Northamptonshire and surrounding areas.
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <div className="hero-btns" style={{ display: "flex", gap: 14, marginBottom: 48 }}>
+              <button className="btn-accent" onClick={() => scrollTo("book")}>Get instant price <ArrowRight size={14} /></button>
+              <button className="btn-outline-dark" onClick={() => scrollTo("services")}>Our services</button>
+            </div>
+          </Reveal>
+
+          {/* Service pills */}
+          <Reveal delay={0.24}>
+            <div className="hero-pills" style={{ display: "flex", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+              {["Domestic EPC", "PAS2035", "CDM 2015", "Fire Safety"].map(label => (
+                <div key={label} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "12px 20px",
+                  background: "rgba(240,238,232,0.08)", backdropFilter: "blur(4px)",
+                  border: "1px solid rgba(240,238,232,0.1)", borderRadius: 2,
+                  fontSize: 14, color: "var(--fg-light)", fontWeight: 300,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5A7A5F" }} />
                   {label}
                 </div>
               ))}
             </div>
-          </FadeIn>
-          <FadeIn delay={0.5}>
-            <div style={{ display: "flex", gap: 24, marginTop: 32, flexWrap: "wrap" }}>
-              {["Same-week availability", "From £75", "Fully insured"].map((item) => (
-                <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-secondary)", fontWeight: 400 }}>
-                  <span style={{ color: "var(--warm)", fontSize: 14, fontWeight: 700 }}>✔</span>
+          </Reveal>
+          <Reveal delay={0.3}>
+            <div style={{ display: "flex", gap: 28, flexWrap: "wrap" }}>
+              {["Same-week availability", "From £75", "Fully insured"].map(item => (
+                <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>
+                  <Check size={14} style={{ color: "var(--accent)" }} />
                   {item}
                 </div>
               ))}
             </div>
-          </FadeIn>
+          </Reveal>
         </div>
       </section>
 
-      {/* SCROLLING MARQUEE */}
-      <div style={{ overflow: "hidden", padding: "36px 0", background: "var(--chalk)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+      {/* ═══ SCROLLING MARQUEE ═══ */}
+      <div style={{ overflow: "hidden", padding: "32px 0", background: "var(--bg-light)", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
         <div className="marquee-track">
           {[...Array(2)].flatMap((_, rep) =>
             ["Principal Designer", "Fire Risk Assessment", "Energy Performance", "Retrofit Assessment", "CDM Compliance", "Building Safety"].map((t, i) => (
               <span className="marquee-item" key={`${rep}-${i}`}>
-                {t} <span style={{ margin: "0 16px", opacity: 0.3 }}>✦</span>
+                {t} <span style={{ margin: "0 16px", opacity: 0.3, fontSize: "0.6em" }}>✦</span>
               </span>
             ))
           )}
         </div>
       </div>
 
-      {/* BOOKING BANNER */}
+      {/* ═══ BOOKING BANNER ═══ */}
       <section style={{
-        background: "linear-gradient(135deg, var(--sage) 0%, var(--sage-deep) 100%)",
-        padding: "56px clamp(20px, 4vw, 64px)",
-        position: "relative",
-        overflow: "hidden",
+        background: "var(--bg)",
+        padding: "52px var(--px)", position: "relative", overflow: "hidden",
       }}>
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-          background: "radial-gradient(ellipse at 90% 50%, rgba(255,255,255,0.06) 0%, transparent 60%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-          <div className="booking-banner-grid" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
+        <LavaBg />
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto", position: "relative", zIndex: 2 }}>
+          <div className="booking-banner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <div style={{
-                  background: "rgba(255,255,255,0.15)",
-                  padding: "6px 14px",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "white",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}>
-                  <Calendar size={13} />
-                  Now booking
-                </div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(228,208,72,0.12)", padding: "5px 14px", fontSize: 11, fontFamily: "var(--font-mono)", fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 14, borderRadius: 2 }}>
+                <Calendar size={12} /> Now booking
               </div>
-              <h2 style={{
-                fontFamily: "'Instrument Serif', serif",
-                fontSize: "clamp(24px, 3.5vw, 36px)",
-                fontWeight: 400,
-                color: "white",
-                letterSpacing: "-0.015em",
-                lineHeight: 1.2,
-                marginBottom: 10,
-              }}>
-                Get your EPC or Retrofit quote in 60 seconds
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 300, color: "var(--fg-light)", letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 8 }}>
+                Get your EPC or Retrofit quote in <em style={{ fontStyle: "italic" }}>60 seconds</em>
               </h2>
-              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", fontWeight: 300, lineHeight: 1.6, maxWidth: 500 }}>
-                Instant pricing. Flexible appointments. Same-week availability.
-              </p>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", fontWeight: 300, lineHeight: 1.6 }}>Instant pricing. Flexible appointments. Same-week availability.</p>
             </div>
-            <div style={{ display: "flex", gap: 12, flexShrink: 0, flexWrap: "wrap" }}>
-              <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" style={{
-                background: "white",
-                color: "var(--sage-deep)",
-                border: "none",
-                padding: "18px 36px",
-                fontSize: 14,
-                fontWeight: 700,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                textDecoration: "none",
-                cursor: "pointer",
-                transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                fontFamily: "inherit",
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <a href="https://tally.so/r/Gx0jJj" target="_blank" rel="noopener noreferrer" className="booking-cta-primary" style={{
+                background: "var(--accent)", color: "var(--bg)", border: "none", padding: "16px 32px",
+                fontSize: 12, fontWeight: 500, letterSpacing: "0.05em", textTransform: "uppercase",
+                textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 10,
+                fontFamily: "var(--font-mono)", transition: "all 0.3s cubic-bezier(.22,1,.36,1)", borderRadius: 2,
               }}
-                onMouseEnter={(e) => { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
-                onMouseLeave={(e) => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "none"; }}
-              >
-                Book an EPC
-                <ArrowRight size={16} />
-              </a>
+                onMouseEnter={e => { e.currentTarget.style.filter = "brightness(1.1)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(228,208,72,0.25)"; }}
+                onMouseLeave={e => { e.currentTarget.style.filter = "brightness(1)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+              >Book an EPC <ArrowRight size={14} /></a>
               <a href="https://tally.so/r/LZ0qVJ" target="_blank" rel="noopener noreferrer" style={{
-                background: "transparent",
-                color: "white",
-                border: "1.5px solid rgba(255,255,255,0.4)",
-                padding: "18px 36px",
-                fontSize: 14,
-                fontWeight: 600,
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                textDecoration: "none",
-                cursor: "pointer",
-                transition: "all 0.35s cubic-bezier(.16,1,.3,1)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                fontFamily: "inherit",
+                background: "transparent", color: "var(--fg-light)", border: "1px solid rgba(255,255,255,0.15)",
+                padding: "16px 32px", fontSize: 12, fontWeight: 300, letterSpacing: "0.05em",
+                textTransform: "uppercase", textDecoration: "none", display: "inline-flex",
+                alignItems: "center", gap: 10, fontFamily: "var(--font-mono)", transition: "all 0.3s cubic-bezier(.22,1,.36,1)", borderRadius: 2,
               }}
-                onMouseEnter={(e) => { e.target.style.background = "rgba(255,255,255,0.1)"; e.target.style.borderColor = "rgba(255,255,255,0.7)"; }}
-                onMouseLeave={(e) => { e.target.style.background = "transparent"; e.target.style.borderColor = "rgba(255,255,255,0.4)"; }}
-              >
-                Book a Retrofit
-                <ArrowRight size={16} />
-              </a>
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.color = "var(--accent)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.color = "var(--fg-light)"; e.currentTarget.style.transform = "translateY(0)"; }}
+              >Book a Retrofit <ArrowRight size={14} /></a>
             </div>
           </div>
         </div>
       </section>
 
-      {/* INTRO / TRUST STRIP */}
-      <section className="section-pad" style={{ padding: "100px clamp(20px, 4vw, 64px)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="intro-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
-            <FadeIn>
-              <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-                Who we work with
-              </p>
-              <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(28px, 3.5vw, 42px)", fontWeight: 400, letterSpacing: "-0.015em", lineHeight: 1.2, marginBottom: 24 }}>
-                Trusted by architects, developers &amp; housing providers across the Midlands.
+      {/* ═══ WHO WE WORK WITH ═══ */}
+      <section style={{ padding: "100px var(--px)", background: "var(--bg-light)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+            <Reveal>
+              <div className="section-tag" style={{ color: "var(--muted)" }}>Who we work with</div>
+              <h2 className="section-heading" style={{ fontSize: "clamp(26px, 3.5vw, 40px)", marginBottom: 24 }}>
+                Trusted by architects, developers & housing providers across <em style={{ fontStyle: "italic" }}>Northamptonshire.</em>
               </h2>
-              <p style={{ fontSize: 16, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300 }}>
-                From single-dwelling EPC assessments to multi-phase CDM appointments, we support clients at every scale. Our work spans private developments, social housing portfolios, local authority contracts, and commercial property management — always with the same standard of technical rigour.
+              <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--muted)", fontWeight: 300 }}>
+                From single-dwelling EPC assessments to multi-phase CDM appointments, we support clients at every scale. Our work spans private developments, social housing portfolios, local authority contracts, and commercial property management across Northamptonshire and surrounding areas — always with the same standard of technical rigour.
               </p>
-            </FadeIn>
-            <FadeIn delay={0.15}>
-              <div className="grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {[
-                  { icon: <PenTool size={16} />, label: "Architects & designers" },
-                  { icon: <Building2 size={16} />, label: "Property developers" },
-                  { icon: <Home size={16} />, label: "Housing associations" },
-                  { icon: <Landmark size={16} />, label: "Local authorities" },
-                  { icon: <KeyRound size={16} />, label: "Estate agents" },
-                  { icon: <Briefcase size={16} />, label: "Landlords & portfolio owners" },
+                  { icon: <PenTool size={15} />, label: "Architects & designers" },
+                  { icon: <Building2 size={15} />, label: "Property developers" },
+                  { icon: <Home size={15} />, label: "Housing associations" },
+                  { icon: <Landmark size={15} />, label: "Local authorities" },
+                  { icon: <KeyRound size={15} />, label: "Estate agents" },
+                  { icon: <Briefcase size={15} />, label: "Landlords & portfolio owners" },
                 ].map((c, i) => (
                   <div key={i} style={{
-                    padding: "20px 22px",
-                    background: "rgba(255,255,255,0.5)",
-                    backdropFilter: "blur(6px)",
-                    border: "1px solid var(--border)",
-                    display: "flex", alignItems: "center", gap: 14,
-                    fontSize: 14, fontWeight: 400, color: "var(--ink)",
-                    transition: "all 0.3s",
-                  }}>
-                    <span style={{ color: "var(--sage)", display: "flex", alignItems: "center" }}>{c.icon}</span>
+                    padding: "16px 18px", background: "white", border: "1px solid var(--border-light)",
+                    borderRadius: 4, display: "flex", alignItems: "center", gap: 12,
+                    fontSize: 14, fontWeight: 300, color: "var(--fg)", transition: "border-color 0.3s",
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(228,208,72,0.3)"}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = "var(--border-light)"}
+                  >
+                    <span style={{ color: "var(--muted)", display: "flex", alignItems: "center" }}>{c.icon}</span>
                     {c.label}
                   </div>
                 ))}
               </div>
-            </FadeIn>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* SERVICES */}
-      <section id="services" className="section-pad" style={{ padding: "100px clamp(20px, 4vw, 64px)", background: "white", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <FadeIn>
-            <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-              What we do
-            </p>
-            <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 56 }}>
-              Our services
-            </h2>
-          </FadeIn>
-
-          <div className="service-detail-grid" style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 0 }}>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {SERVICES.map((s, i) => (
-                <button
-                  key={s.id}
-                  className={`service-tab ${activeService === i ? "active" : ""}`}
-                  onClick={() => setActiveService(i)}
-                  style={s.comingSoon ? { position: "relative" } : { position: "relative" }}
-                >
-                  <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-                    {s.title}
-                    {s.comingSoon && (
-                      <span style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: "var(--warm)",
-                        background: "var(--warm-light)",
-                        padding: "3px 8px",
-                        marginLeft: 8,
-                        whiteSpace: "nowrap",
-                      }}>Available soon</span>
-                    )}
-                    {s.bookable && (
-                      <span style={{
-                        fontSize: 9,
-                        fontWeight: 700,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: "var(--sage)",
-                        background: "var(--sage-light)",
-                        padding: "3px 8px",
-                        marginLeft: 8,
-                        whiteSpace: "nowrap",
-                      }}>Book now</span>
-                    )}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            <div style={{ padding: "24px 0 24px 48px", minHeight: 340 }}>
-              <FadeIn key={activeService}>
-                <p style={{ fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--sage-mid)", fontWeight: 500, marginBottom: 12 }}>
-                  {SERVICES[activeService].subtitle}
-                </p>
-                <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: 34, fontWeight: 400, marginBottom: 20, letterSpacing: "-0.01em" }}>
-                  {SERVICES[activeService].title}
-                </h3>
-                <p style={{ fontSize: 16, lineHeight: 1.75, color: "var(--text-secondary)", maxWidth: 560, marginBottom: 36, fontWeight: 300 }}>
-                  {SERVICES[activeService].description}
-                </p>
-                <div className="grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 36px" }}>
-                  {SERVICES[activeService].items.map((item, j) => (
-                    <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 12, fontSize: 14, color: "var(--ink)" }}>
-                      <span style={{ color: "var(--sage)", marginTop: 3, fontSize: 8 }}>◆</span>
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginTop: 36, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                  {SERVICES[activeService].bookable ? (
-                    <a href={SERVICES[activeService].id === "epc" ? "https://tally.so/r/Gx0jJj" : "https://tally.so/r/LZ0qVJ"} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 10 }}>
-                      Book now
-                      <ArrowRight size={15} />
-                    </a>
-                  ) : (
-                    <>
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: 8,
-                        padding: "10px 18px",
-                        background: "var(--warm-light)",
-                        border: "1px solid var(--warm)",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: "#8B7355",
-                      }}>
-                        <Clock size={14} />
-                        Available soon — register your interest now
-                      </div>
-                      <button className="btn-outline" onClick={() => scrollTo("contact")} style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
-                        Register interest
-                        <ArrowRight size={15} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </FadeIn>
-            </div>
-          </div>
+      {/* ═══ SERVICES ═══ */}
+      <section id="services" style={{ padding: "100px var(--px)", background: "white", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <Reveal>
+            <div className="section-tag" style={{ color: "var(--muted)" }}>What we do</div>
+            <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 46px)", marginBottom: 48 }}>Our <em style={{ fontStyle: "italic" }}>services</em></h2>
+          </Reveal>
+          <Reveal delay={0.06}>
+            <ServiceAccordion />
+          </Reveal>
         </div>
       </section>
 
-      {/* ABOUT */}
-      <section id="about" style={{
-        background: "linear-gradient(170deg, #4A5D4F 0%, #3A4B3E 50%, #2E3D32 100%)",
-        color: "var(--chalk)",
-        padding: "100px clamp(20px, 4vw, 64px)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-          background: "radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 60%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-          <div className="grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
-            <FadeIn>
-              <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.5, fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ display: "inline-block", width: 28, height: 1, background: "rgba(255,255,255,0.4)" }} />
-                About Orvello
-              </p>
-              <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.015em", lineHeight: 1.15, marginBottom: 28 }}>
-                Built on engineering,<br />driven by <span style={{ fontStyle: "italic" }}>diligence.</span>
-              </h2>
-              <p style={{ fontSize: 16, lineHeight: 1.8, opacity: 0.8, fontWeight: 300, marginBottom: 20 }}>
-                Orvello is a construction consultancy based in Northampton, founded on a civil engineering background and a commitment to getting the details right. We work with architects, developers, housing associations, and local authorities to deliver regulation-compliant advisory services across health &amp; safety, fire safety, and energy performance.
-              </p>
-              <p style={{ fontSize: 16, lineHeight: 1.8, opacity: 0.8, fontWeight: 300 }}>
-                Whether you need a Principal Designer for a complex multi-phase build or a straightforward EPC for a two-bed terrace, we bring the same standard of care and professionalism to every instruction.
-              </p>
-            </FadeIn>
-            <FadeIn delay={0.15}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                {[
-                  { num: "4", label: "Core services" },
-                  { num: "CDM", label: "2015 compliant" },
-                  { num: "PAS", label: "2035 qualified" },
-                  { num: "FRA", label: "Certified assessor" },
-                ].map((stat, i) => (
+      {/* ═══ ABOUT ═══ */}
+      <section id="about" style={{ background: "var(--bg-light)", color: "var(--fg)", padding: "100px var(--px)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <div className="g2" style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr", gap: 80, alignItems: "center" }}>
+            <Reveal>
+              <div className="section-tag" style={{ color: "var(--muted)" }}>About Orvello</div>
+              <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 44px)", marginBottom: 28 }}>Built on engineering, driven by <em style={{ fontStyle: "italic" }}>diligence.</em></h2>
+              <p style={{ fontSize: 15, lineHeight: 1.85, color: "var(--muted)", fontWeight: 300, marginBottom: 20 }}>Orvello is a construction consultancy based in Northamptonshire, founded on a civil engineering background and a commitment to getting the details right. We work with architects, developers, housing associations, and local authorities across Northamptonshire and surrounding areas.</p>
+              <p style={{ fontSize: 15, lineHeight: 1.85, color: "var(--muted)", fontWeight: 300 }}>Whether you need a Principal Designer for a complex multi-phase build or a straightforward EPC for a two-bed terrace, we bring the same standard of care to every instruction.</p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                {[{ num: "4", label: "Core services" }, { num: "CDM", label: "2015 compliant" }, { num: "PAS", label: "2035 qualified" }, { num: "FRA", label: "Certified assessor" }].map((s, i) => (
                   <div key={i} style={{
-                    padding: 30,
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    backdropFilter: "blur(4px)",
-                    transition: "all 0.3s",
-                  }}>
-                    <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: 36, marginBottom: 8 }}>{stat.num}</div>
-                    <div style={{ fontSize: 12, opacity: 0.5, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 500 }}>{stat.label}</div>
+                    background: "white", padding: 28, borderRadius: 6,
+                    border: "1px solid var(--border-light)",
+                    transition: "all 0.3s cubic-bezier(.22,1,.36,1)", cursor: "default",
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.05)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                  >
+                    <div style={{ fontFamily: "var(--font-display)", fontSize: 30, fontWeight: 300, color: "var(--accent)", marginBottom: 6 }}>{s.num}</div>
+                    <div className="mono-label" style={{ color: "var(--muted)", fontSize: 10 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
-            </FadeIn>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* CREDENTIALS */}
-      <section id="credentials" className="section-pad" style={{ padding: "100px clamp(20px, 4vw, 64px)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <FadeIn>
-            <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-              Why Orvello
-            </p>
-            <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 56 }}>
-              Trusted by homeowners, developers &amp; <span style={{ fontStyle: "italic" }}>landlords.</span>
-            </h2>
-          </FadeIn>
-
-          <div className="grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, alignItems: "stretch" }}>
+      {/* ═══ CREDENTIALS ═══ */}
+      <section style={{ padding: "100px var(--px)", background: "white", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <Reveal>
+            <div className="section-tag" style={{ color: "var(--muted)" }}>Why Orvello</div>
+            <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 44px)", marginBottom: 48 }}>What sets us <em style={{ fontStyle: "italic" }}>apart.</em></h2>
+          </Reveal>
+          <div className="g4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
             {[
-              { title: "Qualified & Specialist", icon: <Award size={22} />, accent: "#4A5D4F", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment, building performance, and compliance.", stat: "BEng + MSc", statLabel: "Qualified" },
-              { title: "Fully Insured & Compliant", icon: <Shield size={22} />, accent: "#7A9580", desc: "Professionally insured (PI & Public Liability) and operating in line with industry regulations and standards.", stat: "PI + PL", statLabel: "Covered" },
-              { title: "Clear, Actionable Reports", icon: <FileCheck size={22} />, accent: "#C86B3C", desc: "No generic outputs. Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%", statLabel: "Compliance" },
-              { title: "Fast & Reliable", icon: <Zap size={22} />, accent: "#6B8F71", desc: "Same-week EPC availability with rapid turnaround. Retrofit and consultancy work scoped within 48 hours.", stat: "48hr", statLabel: "Response" },
-            ].map((card, i) => (
-              <FadeIn key={i} delay={i * 0.1} style={{ display: "flex" }}>
-                <div className="credential-card-v2" style={{
-                  padding: 0,
-                  background: "rgba(255,255,255,0.5)",
-                  backdropFilter: "blur(8px)",
-                  border: "1px solid var(--border)",
-                  overflow: "hidden",
-                  transition: "all 0.4s cubic-bezier(.16,1,.3,1)",
-                  cursor: "default",
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  width: "100%",
-                }}>
-                  <div style={{ height: 3, background: card.accent, transition: "height 0.3s", flexShrink: 0 }} />
-                  <div style={{ padding: "28px 28px 32px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-                      <div style={{
-                        width: 48, height: 48,
-                        background: `${card.accent}18`,
-                        border: `1px solid ${card.accent}30`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: card.accent, borderRadius: 4,
-                      }}>{card.icon}</div>
-                      <span style={{
-                        fontFamily: "'Instrument Serif', serif", fontSize: 36,
-                        color: "var(--border)", fontStyle: "italic", lineHeight: 1,
-                      }}>{String(i + 1).padStart(2, "0")}</span>
-                    </div>
-                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12, letterSpacing: "-0.01em", color: "var(--ink)" }}>{card.title}</h3>
-                    <p style={{ fontSize: 14, lineHeight: 1.75, color: "var(--text-secondary)", fontWeight: 300, marginBottom: 20, flex: 1 }}>{card.desc}</p>
-                    <div style={{
-                      display: "inline-flex", alignItems: "center", gap: 8,
-                      padding: "6px 14px", background: `${card.accent}15`,
-                      border: `1px solid ${card.accent}30`, fontSize: 12,
-                      fontWeight: 600, letterSpacing: "0.04em", color: card.accent, alignSelf: "flex-start",
-                    }}>
-                      <span style={{ fontSize: 14, fontWeight: 700 }}>{card.stat}</span>
-                      <span style={{ opacity: 0.7, textTransform: "uppercase", fontSize: 10 }}>{card.statLabel}</span>
-                    </div>
+              { icon: <Shield size={20} />, title: "Qualified & Specialist", desc: "BEng Civil Engineering with postgraduate expertise in energy assessment and compliance.", stat: "BEng + MSc" },
+              { icon: <FileCheck size={20} />, title: "Fully Insured", desc: "Professionally insured with PI & Public Liability, in line with all industry standards.", stat: "PI + PL" },
+              { icon: <ClipboardList size={20} />, title: "Clear Reports", desc: "Every report includes clear findings, practical recommendations, and full regulatory alignment.", stat: "100%" },
+              { icon: <Zap size={20} />, title: "Fast & Reliable", desc: "Same-week EPC availability. Retrofit and consultancy scoped within 48 hours.", stat: "48hr" },
+            ].map((c, i) => (
+              <Reveal key={i} delay={i * 0.06}>
+                <div style={{
+                  background: "var(--bg-light)", border: "1px solid var(--border-light)",
+                  borderRadius: 6, padding: 28, height: "100%",
+                  display: "flex", flexDirection: "column",
+                  transition: "all 0.35s cubic-bezier(.22,1,.36,1)", cursor: "default",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(228,208,72,0.35)"; e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.06)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-light)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 8, background: "var(--accent-dim)", border: "1px solid rgba(228,208,72,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--accent)" }}>{c.icon}</div>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--accent)", letterSpacing: "0.05em", fontWeight: 400 }}>{c.stat}</span>
                   </div>
+                  <h3 style={{ fontSize: 16, fontWeight: 400, marginBottom: 10, fontFamily: "var(--font-display)", letterSpacing: "-0.01em" }}>{c.title}</h3>
+                  <p style={{ fontSize: 13, lineHeight: 1.75, color: "var(--muted)", fontWeight: 300, flex: 1 }}>{c.desc}</p>
                 </div>
-              </FadeIn>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PRICING CALCULATOR CTA */}
-      <section id="book" style={{
-        padding: "80px clamp(20px, 4vw, 64px)",
-        background: "linear-gradient(170deg, var(--sage) 0%, var(--sage-deep) 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-          background: "radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 60%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ maxWidth: 900, margin: "0 auto", position: "relative" }}>
-          <FadeIn>
+      {/* ═══ PRICING ═══ */}
+      <section id="book" style={{ padding: "100px var(--px)", background: "var(--bg)", color: "var(--fg-light)", position: "relative", overflow: "hidden" }}>
+        {/* Extra prominent lava for glass effect */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
+          <div style={{ position: "absolute", top: "-20%", left: "10%", width: "70%", height: "80%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.14) 0%, rgba(228,208,72,0.04) 50%, transparent 70%)", filter: "blur(60px)", animation: "lavaFloat 14s ease-in-out infinite alternate" }} />
+          <div style={{ position: "absolute", bottom: "-15%", right: "5%", width: "55%", height: "70%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.10) 0%, rgba(228,208,72,0.03) 50%, transparent 70%)", filter: "blur(70px)", animation: "lavaFloat 18s ease-in-out infinite alternate-reverse" }} />
+          <div style={{ position: "absolute", top: "30%", right: "25%", width: "40%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(200,180,60,0.08) 0%, transparent 60%)", filter: "blur(50px)", animation: "lavaFloat 10s ease-in-out infinite alternate" }} />
+        </div>
+        <LavaBg />
+        <div style={{ maxWidth: 900, margin: "0 auto", position: "relative", zIndex: 2 }}>
+          <Reveal>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
-              <h2 style={{
-                fontFamily: "'Instrument Serif', serif",
-                fontSize: "clamp(28px, 4vw, 40px)",
-                fontWeight: 400, color: "white",
-                letterSpacing: "-0.015em", marginBottom: 12,
-              }}>
-                Ready to book your assessment?
-              </h2>
-              <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", fontWeight: 300 }}>
-                Get your quote in under 60 seconds.
-              </p>
+              <div className="section-tag" style={{ color: "var(--accent)", justifyContent: "center" }}>Instant pricing</div>
+              <h2 className="section-heading" style={{ fontSize: "clamp(26px, 3.5vw, 40px)", color: "var(--fg-light)" }}>Ready to book your <em style={{ fontStyle: "italic" }}>assessment?</em></h2>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", fontWeight: 300, marginTop: 12 }}>Get your quote in under 60 seconds.</p>
             </div>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <PricingCalculator />
-          </FadeIn>
+          </Reveal>
+          <Reveal delay={0.08}><PricingCalc /></Reveal>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="section-pad" style={{ padding: "100px clamp(20px, 4vw, 64px)", background: "white", borderTop: "1px solid var(--border)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 80, alignItems: "start" }}>
-            <FadeIn>
-              <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--sage)", fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ display: "inline-block", width: 28, height: 1, background: "var(--sage)" }} />
-                FAQ
-              </p>
-              <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.01em", marginBottom: 20 }}>
-                Common<br />questions
-              </h2>
-              <p style={{ fontSize: 15, lineHeight: 1.7, color: "var(--text-secondary)", fontWeight: 300 }}>
-                Can't find your answer? Request a quote or ask us anything — we respond within 24 hours.
-              </p>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <FaqAccordion />
-            </FadeIn>
+      {/* ═══ FAQ ═══ */}
+      <section id="faq" style={{ padding: "100px var(--px)", background: "var(--bg-light)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: 80, alignItems: "start" }}>
+            <Reveal>
+              <div className="section-tag" style={{ color: "var(--muted)" }}>FAQ</div>
+              <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 42px)", marginBottom: 20 }}>Common <em style={{ fontStyle: "italic" }}>questions</em></h2>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: "var(--muted)", fontWeight: 300 }}>Can't find your answer? Get in touch — we respond within 24 hours.</p>
+            </Reveal>
+            <Reveal delay={0.08}><FaqAccordion /></Reveal>
           </div>
         </div>
       </section>
 
-      {/* CTA / CONTACT */}
-      <section id="contact" style={{
-        background: "linear-gradient(175deg, #1A1A18 0%, #232320 100%)",
-        color: "var(--chalk)",
-        padding: "100px clamp(20px, 4vw, 64px)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-          background: "radial-gradient(ellipse at 20% 80%, rgba(74,93,79,0.08) 0%, transparent 60%)",
-          pointerEvents: "none",
-        }} />
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-          <div className="grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}>
-            <FadeIn>
-              <p style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.35, fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ display: "inline-block", width: 28, height: 1, background: "rgba(255,255,255,0.25)" }} />
-                Request a quote
-              </p>
-              <h2 style={{ fontFamily: "'Instrument Serif', serif", fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 400, letterSpacing: "-0.015em", lineHeight: 1.15, marginBottom: 28 }}>
-                Tell us what<br />you <span style={{ fontStyle: "italic" }}>need.</span>
-              </h2>
-              <p style={{ fontSize: 16, lineHeight: 1.8, opacity: 0.55, fontWeight: 300, maxWidth: 440, marginBottom: 48 }}>
-                Describe your project or requirement and we'll come back with a clear scope and quote within 24 hours. No obligation.
-              </p>
+      {/* ═══ CONTACT ═══ */}
+      <section id="contact" style={{ background: "var(--bg)", color: "var(--fg-light)", padding: "100px var(--px)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <div className="g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}>
+            <Reveal>
+              <div className="section-tag" style={{ color: "var(--accent)" }}>Get in touch</div>
+              <h2 className="section-heading" style={{ fontSize: "clamp(28px, 4vw, 42px)", marginBottom: 28, color: "var(--fg-light)" }}>Tell us what you <em style={{ fontStyle: "italic" }}>need.</em></h2>
+              <p style={{ fontSize: 15, lineHeight: 1.8, color: "rgba(255,255,255,0.4)", fontWeight: 300, maxWidth: 440, marginBottom: 48 }}>Describe your project or requirement and we'll come back with a clear scope and quote within 24 hours. No obligation.</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                {[
-                  { label: "Email", value: "hello@orvello.co.uk", href: "mailto:hello@orvello.co.uk" },
-                  { label: "Location", value: "Northampton, United Kingdom" },
-                  { label: "Coverage", value: "Northamptonshire & surrounding counties" },
-                ].map((item) => (
+                {[{ label: "Email", value: "hello@orvello.co.uk", href: "mailto:hello@orvello.co.uk" }, { label: "Location", value: "Northamptonshire, United Kingdom" }, { label: "Coverage", value: "Northamptonshire & surrounding areas" }].map(item => (
                   <div key={item.label}>
-                    <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.3, marginBottom: 6 }}>{item.label}</div>
-                    {item.href ? (
-                      <a href={item.href} style={{ color: "var(--warm)", textDecoration: "none", fontSize: 16, transition: "opacity 0.3s" }}>{item.value}</a>
-                    ) : (
-                      <div style={{ fontSize: 16, opacity: 0.75 }}>{item.value}</div>
-                    )}
+                    <div className="mono-label" style={{ color: "rgba(255,255,255,0.25)", marginBottom: 6 }}>{item.label}</div>
+                    {item.href ? <a href={item.href} style={{ color: "var(--accent)", textDecoration: "none", fontSize: 15, fontWeight: 300 }}>{item.value}</a> : <div style={{ fontSize: 15, color: "rgba(255,255,255,0.5)", fontWeight: 300 }}>{item.value}</div>}
                   </div>
                 ))}
               </div>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <div style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                padding: 44,
-                backdropFilter: "blur(4px)",
-              }}>
+            </Reveal>
+            <Reveal delay={0.08}>
+              <div style={{ border: "1px solid rgba(255,255,255,0.08)", padding: 36, borderRadius: 4 }}>
                 {(() => {
-                  const [formState, setFormState] = useState({ name: "", email: "", service: "", message: "" });
+                  const [form, setForm] = useState({ name: "", email: "", service: "", message: "" });
                   const [submitted, setSubmitted] = useState(false);
                   const [sending, setSending] = useState(false);
-
-                  const handleSubmit = async (e) => {
-                    e.preventDefault();
-                    setSending(true);
-                    try {
-                      const res = await fetch("https://formspree.io/f/mvzwlvww", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(formState),
-                      });
-                      if (res.ok) setSubmitted(true);
-                    } catch (err) {
-                      console.error(err);
-                    }
-                    setSending(false);
-                  };
-
-                  if (submitted) {
-                    return (
-                      <div style={{ textAlign: "center", padding: "48px 20px" }}>
-                        <div style={{
-                          width: 56, height: 56, borderRadius: "50%",
-                          background: "var(--sage)", display: "flex", alignItems: "center", justifyContent: "center",
-                          margin: "0 auto 24px", fontSize: 24, color: "white",
-                        }}>✓</div>
-                        <h3 style={{ fontFamily: "'Instrument Serif', serif", fontSize: 28, fontWeight: 400, marginBottom: 12 }}>
-                          Enquiry sent
-                        </h3>
-                        <p style={{ fontSize: 15, opacity: 0.5, fontWeight: 300 }}>
-                          Thanks {formState.name.split(" ")[0]}. We'll get back to you within one working day.
-                        </p>
-                      </div>
-                    );
-                  }
-
+                  const handleSubmit = async () => { setSending(true); try { const res = await fetch("https://formspree.io/f/mvzwlvww", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }); if (res.ok) setSubmitted(true); } catch (err) { console.error(err); } setSending(false); };
+                  if (submitted) return (
+                    <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                      <div style={{ width: 44, height: 44, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 18, color: "var(--bg)", borderRadius: 2 }}>✓</div>
+                      <h3 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 300, marginBottom: 8 }}>Enquiry sent</h3>
+                      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", fontWeight: 300 }}>Thanks {form.name.split(" ")[0]}. We'll respond within one working day.</p>
+                    </div>
+                  );
                   return (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
-                      <div>
-                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Name</label>
-                        <input
-                          type="text" placeholder="Your full name" value={formState.name} required
-                          onChange={(e) => setFormState({ ...formState, name: e.target.value })}
-                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none", transition: "border-color 0.3s" }}
-                          onFocus={(e) => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
-                          onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Email</label>
-                        <input
-                          type="email" placeholder="you@company.com" value={formState.email} required
-                          onChange={(e) => setFormState({ ...formState, email: e.target.value })}
-                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none", transition: "border-color 0.3s" }}
-                          onFocus={(e) => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
-                          onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Service of interest</label>
-                        <select
-                          value={formState.service}
-                          onChange={(e) => setFormState({ ...formState, service: e.target.value })}
-                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", outline: "none", appearance: "none", transition: "border-color 0.3s" }}
-                        >
-                          <option value="" style={{ background: "#232320" }}>Select a service</option>
-                          {["Domestic EPC", "PAS2035 Retrofit Assessment", "CDM Principal Designer", "Fire Risk Assessment", "Multiple services", "Not sure yet"].map((o) => (
-                            <option key={o} value={o} style={{ background: "#232320" }}>{o}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", opacity: 0.4, marginBottom: 10 }}>Message</label>
-                        <textarea
-                          placeholder="Tell us about your project or requirement..." rows={4}
-                          value={formState.message}
-                          onChange={(e) => setFormState({ ...formState, message: e.target.value })}
-                          style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "14px 18px", color: "var(--chalk)", fontSize: 15, fontFamily: "inherit", resize: "vertical", outline: "none", transition: "border-color 0.3s" }}
-                          onFocus={(e) => e.target.style.borderColor = "rgba(255,255,255,0.25)"}
-                          onBlur={(e) => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
-                        />
-                      </div>
-                      <button
-                        className="btn-primary"
-                        onClick={handleSubmit}
-                        disabled={sending || !formState.name || !formState.email}
-                        style={{
-                          width: "100%", marginTop: 8, background: "var(--sage)", padding: "18px 36px",
-                          opacity: (sending || !formState.name || !formState.email) ? 0.5 : 1,
-                          cursor: (sending || !formState.name || !formState.email) ? "not-allowed" : "pointer",
-                        }}
-                      >
-                        {sending ? "Sending..." : "Request a quote"}
-                      </button>
-                      <p style={{ fontSize: 12, opacity: 0.3, textAlign: "center", marginTop: 4 }}>
-                        We typically respond within 24 hours · No obligation
-                      </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                      <div><label className="mono-label" style={{ display: "block", color: "rgba(255,255,255,0.25)", marginBottom: 8 }}>Name</label><input className="form-input" type="text" placeholder="Your full name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+                      <div><label className="mono-label" style={{ display: "block", color: "rgba(255,255,255,0.25)", marginBottom: 8 }}>Email</label><input className="form-input" type="email" placeholder="you@company.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
+                      <div><label className="mono-label" style={{ display: "block", color: "rgba(255,255,255,0.25)", marginBottom: 8 }}>Service</label><select className="form-input" value={form.service} onChange={e => setForm({ ...form, service: e.target.value })} style={{ appearance: "none" }}><option value="" style={{ background: "var(--bg)" }}>Select a service</option>{["Domestic EPC", "PAS2035 Retrofit Assessment", "CDM Principal Designer", "Fire Risk Assessment", "Multiple services", "Not sure yet"].map(o => <option key={o} value={o} style={{ background: "var(--bg)" }}>{o}</option>)}</select></div>
+                      <div><label className="mono-label" style={{ display: "block", color: "rgba(255,255,255,0.25)", marginBottom: 8 }}>Message</label><textarea className="form-input" rows={4} placeholder="Tell us about your project..." value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} style={{ resize: "vertical" }} /></div>
+                      <button className="btn-accent" onClick={handleSubmit} disabled={sending || !form.name || !form.email} style={{ width: "100%", marginTop: 4, justifyContent: "center", opacity: (sending || !form.name || !form.email) ? 0.5 : 1, cursor: (sending || !form.name || !form.email) ? "not-allowed" : "pointer" }}>{sending ? "Sending..." : "Request a quote"}</button>
+                      <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", textAlign: "center", fontFamily: "var(--font-mono)" }}>We typically respond within 24 hours · No obligation</p>
                     </div>
                   );
                 })()}
               </div>
-            </FadeIn>
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background: "#1A1A18", borderTop: "1px solid rgba(255,255,255,0.05)", padding: "48px clamp(20px, 4vw, 64px) 32px", color: "var(--chalk)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+      <footer style={{ background: "var(--bg)", borderTop: "1px solid rgba(255,255,255,0.05)", padding: "44px var(--px) 28px", color: "var(--fg-light)" }}>
+        <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
+          <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 48, marginBottom: 44 }}>
             <div>
-              <span style={{ fontFamily: "'Instrument Serif', serif", fontSize: 22, color: "var(--sage-mid)" }}><em>O</em>rvello</span>
-              <p style={{ fontSize: 14, opacity: 0.35, marginTop: 14, lineHeight: 1.7, maxWidth: 320 }}>
-                Construction consultancy specialising in CDM, fire safety, energy performance, and retrofit assessment. Based in Northampton, serving clients across the Midlands.
-              </p>
+              <div style={{ display: "flex", alignItems: "baseline", marginBottom: 12 }}><span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 400 }}>Orvello</span><span style={{ width: 3, height: 3, background: "var(--accent)", display: "inline-block", marginLeft: 2, borderRadius: 1 }} /></div>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", lineHeight: 1.7, maxWidth: 320, fontWeight: 300 }}>Construction consultancy specialising in CDM, fire safety, energy performance, and retrofit across Northamptonshire and surrounding areas.</p>
             </div>
             <div>
-              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.25, marginBottom: 18 }}>Services</div>
-              {SERVICES.map((s) => (
-                <div key={s.id} style={{ fontSize: 14, opacity: 0.45, marginBottom: 12, cursor: "pointer", transition: "opacity 0.3s" }}
-                  onClick={() => { scrollTo("services"); setActiveService(SERVICES.indexOf(s)); }}>
-                  {s.title}
-                </div>
-              ))}
+              <div className="mono-label" style={{ color: "rgba(255,255,255,0.2)", marginBottom: 16, fontSize: 10 }}>Services</div>
+              {SERVICES.map(s => <div key={s.id} style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", marginBottom: 10, cursor: "pointer", transition: "color 0.2s", fontWeight: 300 }} onClick={() => scrollTo("services")} onMouseEnter={e => e.target.style.color = "var(--fg-light)"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.3)"}>{s.title}</div>)}
             </div>
             <div>
-              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.12em", opacity: 0.25, marginBottom: 18 }}>Contact</div>
-              <a href="mailto:hello@orvello.co.uk" style={{ fontSize: 14, opacity: 0.45, marginBottom: 12, display: "block", color: "var(--chalk)", textDecoration: "none", transition: "opacity 0.3s" }} onMouseEnter={(e) => e.target.style.opacity = "0.8"} onMouseLeave={(e) => e.target.style.opacity = "0.45"}>hello@orvello.co.uk</a>
-              <div style={{ fontSize: 14, opacity: 0.45, marginBottom: 12 }}>Northampton, UK</div>
+              <div className="mono-label" style={{ color: "rgba(255,255,255,0.2)", marginBottom: 16, fontSize: 10 }}>Contact</div>
+              <a href="mailto:hello@orvello.co.uk" style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", marginBottom: 10, display: "block", textDecoration: "none", transition: "color 0.2s", fontWeight: 300 }} onMouseEnter={e => e.target.style.color = "var(--accent)"} onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.3)"}>hello@orvello.co.uk</a>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontWeight: 300 }}>Northamptonshire, UK</div>
             </div>
           </div>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ fontSize: 13, opacity: 0.25 }}>© 2026 Orvello. All rights reserved.</div>
-            <div style={{ fontSize: 13, opacity: 0.25 }}>CDM · Fire Safety · EPC · Retrofit</div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <div className="mono-label" style={{ color: "rgba(255,255,255,0.18)", fontSize: 10 }}>© 2026 Orvello. All rights reserved.</div>
+            <div className="mono-label" style={{ color: "rgba(255,255,255,0.18)", fontSize: 10 }}>CDM · Fire Safety · EPC · Retrofit</div>
           </div>
         </div>
       </footer>
