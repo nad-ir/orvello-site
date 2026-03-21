@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Menu, X } from "lucide-react";
+import { ArrowLeft, Menu, X, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const SERVICES = [
@@ -13,72 +13,87 @@ const TERMS_SECTIONS = [
   {
     num: "01",
     title: "Introduction",
-    content: `These Terms of Service ("Terms") govern your use of the services provided by Orvello Ltd ("Orvello", "we", "us", or "our"), a construction consultancy registered in England and Wales, operating from Northampton.\n\nBy engaging our services — including but not limited to Domestic Energy Performance Certificates (EPCs), PAS2035 Retrofit Assessments, CDM Principal Designer appointments, and Fire Risk Assessments — you agree to be bound by these Terms.\n\nIf you do not agree with any part of these Terms, please do not proceed with a booking or enquiry.`,
+    content: `These Terms of Service ("Terms") govern the provision of services by Orvello ("we", "us", or "our"), a construction consultancy operating in England and Wales. Orvello is a trading name of a sole trader operating within the United Kingdom.\n\nBy instructing or engaging our services, you ("the Client") agree to be bound by these Terms.`,
   },
   {
     num: "02",
-    title: "Services",
-    content: `Orvello provides construction consultancy services across Northamptonshire and surrounding areas. Our current service offering includes:\n\n• Domestic Energy Performance Certificates (EPCs) — assessments conducted in accordance with the Energy Performance of Buildings Regulations.\n• PAS2035 Retrofit Assessments — dwelling assessments and medium-term improvement plans under the PAS2035:2023 framework.\n• CDM Principal Designer — planning, managing, and coordinating health and safety during the pre-construction phase under CDM 2015.\n• Fire Risk Assessments — assessments conducted under the Regulatory Reform (Fire Safety) Order 2005.\n\nServices marked as "Available soon" on our website are not yet accepting bookings. We reserve the right to modify, expand, or discontinue any service at any time.`,
+    title: "Scope of Services",
+    content: `We provide construction consultancy services including, but not limited to:\n\n• Domestic Energy Performance Certificates (EPCs)\n• PAS 2035 Retrofit Assessments\n• CDM Principal Designer services\n• Fire Risk Assessments`,
   },
   {
     num: "03",
-    title: "Bookings & Scheduling",
-    content: `Bookings are made through our website booking forms or by direct arrangement via email. A booking is confirmed only when we issue written confirmation (including email).\n\nWe aim to accommodate your preferred dates and times but cannot guarantee specific appointment slots. We will make reasonable efforts to notify you of any scheduling changes as early as possible.\n\nIf you need to reschedule, please give us at least 24 hours' notice. Failure to provide adequate notice may result in a rebooking fee.`,
+    title: "Formation of Contract",
+    content: `A contract is formed when a booking is confirmed in writing, an instruction is accepted, or work commences.`,
   },
   {
     num: "04",
-    title: "Pricing & Payment",
-    content: `Prices displayed on our website are inclusive of the assessment visit, report preparation, and — where applicable — certificate lodgement.\n\nPrices are subject to change without notice, but any price confirmed in a booking confirmation will be honoured for that booking.\n\nPayment is due upon completion of the assessment unless otherwise agreed in writing. We accept bank transfer and other payment methods as communicated at the time of booking.\n\nFor bulk or portfolio work, bespoke pricing will be agreed in writing before work commences.`,
+    title: "Client Obligations",
+    content: `The Client shall provide all necessary information, safe site access, and relevant documentation in a timely manner.\n\nWe are not liable for errors, omissions, or delays arising from inaccurate, incomplete, or misleading information provided by the Client or third parties.`,
   },
   {
     num: "05",
-    title: "Cancellations & Refunds",
-    content: `You may cancel a confirmed booking free of charge provided you give at least 24 hours' notice before the scheduled appointment.\n\nCancellations made with less than 24 hours' notice, or where we are unable to gain access to the property at the agreed time, may be subject to a cancellation fee of up to 50% of the agreed price.\n\nIf we need to cancel an appointment, we will offer an alternative date at no additional cost. If no suitable alternative can be arranged, you will receive a full refund of any amount already paid.\n\nRefunds will be processed within 14 working days.`,
+    title: "Pricing & Payment",
+    content: `5.1 General: All fees are confirmed prior to work. We reserve the right to request full or partial payment in advance at our discretion.\n\n5.2 Domestic EPCs: Fees below £110 require payment before certificate release. Fees above £110 may require a 50% deposit, with the balance due before release.\n\n5.3 Other Services: 50% upfront / 50% on completion or reached milestones.\n\n5.4 Commercial / Council / Developer Clients: Standard terms are 14 days from invoice.\n\n5.5 Withholding Deliverables: We reserve the right to withhold reports and will not upload EPCs to the Government Register until payment is received in full.\n\n5.6 Changes in Scope: If additional complexity arises, we will notify you and agree on costs before proceeding.`,
   },
   {
     num: "06",
-    title: "Access & Client Responsibilities",
-    content: `For property-based assessments, you are responsible for ensuring that the assessor has safe and reasonable access to all areas of the property at the agreed time.\n\nIf access is restricted or denied on the day of the visit, we may not be able to complete the assessment, and a revisit fee may apply.\n\nYou confirm that you have the authority to instruct an assessment on the property, or that you are acting on behalf of the property owner with their consent.`,
+    title: "Travel & Geographic Scope",
+    content: `Domestic EPC services are provided within Northamptonshire with travel included. Other services cover Northamptonshire, Bedfordshire, Buckinghamshire, and Milton Keynes.\n\nTravel outside these areas may incur additional charges, agreed in advance. Mileage for commercial clients is charged at HMRC rates or as part of a fixed fee.`,
   },
   {
     num: "07",
-    title: "Reports & Deliverables",
-    content: `Assessment reports and certificates will be delivered electronically (typically via email or digital portal) within the timeframe communicated at the time of booking — usually 24–48 hours for EPCs and 5–10 working days for more detailed reports.\n\nEPCs are lodged on the national register in accordance with regulatory requirements. You will receive your certificate reference number upon lodgement.\n\nReports are prepared with reasonable skill and care based on the conditions observed at the time of the assessment. They reflect a point-in-time observation and should not be relied upon as a guarantee of ongoing compliance.`,
+    title: "Cancellations & Access",
+    content: `We require 24 hours' notice for cancellations. Late cancellations or "No Access" events (including instances where a key-holder is unavailable at the agreed time) will incur a fee of up to 50% of the total quote.`,
   },
   {
     num: "08",
-    title: "Limitation of Liability",
-    content: `Our liability in connection with any service is limited to the fee paid for that service.\n\nWe shall not be liable for any indirect, consequential, or special losses arising from or in connection with our services, including but not limited to loss of profit, loss of business, or loss of opportunity.\n\nNothing in these Terms excludes or limits our liability for death or personal injury caused by our negligence, fraud or fraudulent misrepresentation, or any other liability that cannot be excluded by law.`,
+    title: "Delivery of Services",
+    content: `Indicative timeframes are 24–48 hours for EPCs and 5–10 working days for other reports. These are estimates and not guaranteed deadlines.`,
   },
   {
     num: "09",
-    title: "Insurance",
-    content: `Orvello holds Professional Indemnity insurance and Public Liability insurance appropriate to the services we provide. Details of our insurance arrangements are available on request.`,
+    title: "Intellectual Property",
+    content: `All intellectual property rights in reports, data, or deliverables remain the property of Orvello until payment is received in full.\n\nUpon full payment, the Client is granted a non-exclusive licence to use the deliverables for the purpose for which they were commissioned.`,
   },
   {
     num: "10",
-    title: "Intellectual Property",
-    content: `All reports, documents, and materials produced by Orvello remain our intellectual property until full payment has been received.\n\nUpon full payment, you are granted a non-exclusive licence to use the deliverables for their intended purpose. You may not reproduce, distribute, or resell our reports or materials without our prior written consent.`,
+    title: "Liability",
+    content: `10.1 Liability Cap: Our total liability for any claim shall not exceed the lower of £1,000,000 or the limit of our Professional Indemnity insurance. This limit does not apply to death or personal injury caused by our negligence.\n\n10.2 Exclusions: We are not liable for indirect or consequential losses. Outputs are a "snapshot in time" and do not guarantee future statutory compliance.`,
   },
   {
     num: "11",
-    title: "Data Protection & Privacy",
-    content: `We collect and process personal data in accordance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.\n\nPersonal data collected during the booking and assessment process — such as your name, email address, property address, and contact details — is used solely for the purpose of delivering our services and communicating with you.\n\nWe do not sell or share your personal data with third parties except where required by law or where necessary to deliver our services (e.g. lodging an EPC on the national register).\n\nYou have the right to access, correct, or request deletion of your personal data at any time by contacting us at hello@orvello.co.uk.`,
+    title: "Insurance",
+    content: `We maintain Professional Indemnity insurance (minimum £1,000,000) and Public Liability insurance (minimum £2,000,000).`,
   },
   {
     num: "12",
-    title: "Complaints",
-    content: `If you are dissatisfied with any aspect of our service, please contact us at hello@orvello.co.uk and we will aim to resolve the matter within 14 working days.\n\nIf we are unable to resolve your complaint to your satisfaction, you may refer the matter to the relevant professional body or ombudsman service.`,
+    title: "Data Protection & Confidentiality",
+    content: `We comply with UK GDPR and the Data Protection Act 2018. Client information is treated as confidential.\n\nWe may use anonymised data for marketing, benchmarking, or industry analysis. Our full Privacy Notice is available upon request.`,
   },
   {
     num: "13",
-    title: "Governing Law",
-    content: `These Terms are governed by and construed in accordance with the laws of England and Wales.\n\nAny disputes arising from or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts of England and Wales.`,
+    title: "Statutory Compliance",
+    content: `We comply with the Health and Safety at Work etc. Act 1974, Equality Act 2010, and Bribery Act 2010.`,
   },
   {
     num: "14",
-    title: "Changes to These Terms",
-    content: `We may update these Terms from time to time. The latest version will always be available on our website. Continued use of our services after any changes constitutes acceptance of the revised Terms.\n\nThese Terms were last updated on 21 March 2026.`,
+    title: "Termination & Disputes",
+    content: `Either party may terminate with reasonable notice. Disputes should be resolved amicably before legal action.\n\nInterest on late payments may be charged under the Late Payment of Commercial Debts (Interest) Act 1998.`,
+  },
+  {
+    num: "15",
+    title: "Service-Specific Provisions",
+    content: `• EPCs: Energy Performance of Buildings (England and Wales) Regulations 2012.\n• PAS 2035: PAS 2035:2023 standards.\n• CDM: Construction (Design and Management) Regulations 2015.\n• Fire Risk: Regulatory Reform (Fire Safety) Order 2005.`,
+  },
+  {
+    num: "16",
+    title: "Consumer Rights",
+    content: `Under the Consumer Contracts Regulations 2013, consumers may have a 14-day cancellation right.\n\nBy booking a service to be delivered within 14 days, the Client explicitly requests the service to begin during the cancellation period and acknowledges that their right to cancel is lost once the service is fully performed.`,
+  },
+  {
+    num: "17",
+    title: "Force Majeure & Third Parties",
+    content: `We are not liable for events outside our control. Reports are for the Client's use only; no third-party reliance is permitted without written consent.`,
   },
 ];
 
@@ -104,7 +119,6 @@ function Reveal({ children, delay = 0, className = "", style = {} }) {
   );
 }
 
-/* ─── Header card background — subtle static grain, no canvas animation needed ─── */
 function HeaderGrain() {
   const grainRef = useRef(null);
   useEffect(() => {
@@ -122,36 +136,92 @@ function HeaderGrain() {
   return <canvas ref={grainRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", opacity: 0.5, mixBlendMode: "overlay", borderRadius: "inherit", zIndex: 1 }} />;
 }
 
-/* ─── Table of contents sidebar ─── */
+/* ─── Sidebar TOC — desktop: sticky, mobile: collapsible ─── */
 function TOCSidebar({ activeSection }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <nav className="toc-sidebar" style={{ position: "sticky", top: 100 }}>
-      <div className="mono-label" style={{ color: "var(--muted)", marginBottom: 20, fontSize: 10 }}>Contents</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {TERMS_SECTIONS.map((s) => {
-          const isActive = activeSection === s.num;
-          return (
-            <a
-              key={s.num}
-              href={`#section-${s.num}`}
-              style={{
-                display: "flex", alignItems: "center", gap: 10,
-                padding: "8px 12px",
-                fontSize: 12, fontWeight: isActive ? 400 : 300,
-                color: isActive ? "var(--fg)" : "var(--muted)",
-                textDecoration: "none",
-                borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
-                background: isActive ? "rgba(228,208,72,0.04)" : "transparent",
-                transition: "all 0.25s",
-                fontFamily: "var(--font-body)",
-                lineHeight: 1.4,
-              }}
-            >
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: isActive ? "var(--accent)" : "var(--muted)", minWidth: 18, opacity: isActive ? 1 : 0.5 }}>{s.num}</span>
-              {s.title}
-            </a>
-          );
-        })}
+    <nav className="toc-sidebar">
+      {/* Desktop: always visible sticky */}
+      <div className="toc-desktop" style={{ position: "sticky", top: 100 }}>
+        <div className="mono-label" style={{ color: "var(--muted)", marginBottom: 20, fontSize: 10 }}>Contents</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {TERMS_SECTIONS.map((s) => {
+            const isActive = activeSection === s.num;
+            return (
+              <a
+                key={s.num}
+                href={`#section-${s.num}`}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "8px 12px",
+                  fontSize: 12, fontWeight: isActive ? 400 : 300,
+                  color: isActive ? "var(--fg)" : "var(--muted)",
+                  textDecoration: "none",
+                  borderLeft: isActive ? "2px solid var(--accent)" : "2px solid transparent",
+                  background: isActive ? "rgba(228,208,72,0.04)" : "transparent",
+                  transition: "all 0.25s",
+                  fontFamily: "var(--font-body)",
+                  lineHeight: 1.4,
+                }}
+              >
+                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: isActive ? "var(--accent)" : "var(--muted)", minWidth: 18, opacity: isActive ? 1 : 0.5 }}>{s.num}</span>
+                {s.title}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile: collapsible dropdown */}
+      <div className="toc-mobile">
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "16px 20px", background: "white", border: "1px solid var(--border-light)",
+            borderRadius: 8, cursor: "pointer", fontFamily: "var(--font-body)",
+            fontSize: 14, fontWeight: 400, color: "var(--fg)",
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className="mono-label" style={{ color: "var(--accent)", fontSize: 10 }}>{activeSection}</span>
+            {TERMS_SECTIONS.find(s => s.num === activeSection)?.title || "Contents"}
+          </span>
+          <ChevronDown size={16} style={{ color: "var(--muted)", transition: "transform 0.3s", transform: mobileOpen ? "rotate(180deg)" : "rotate(0)" }} />
+        </button>
+        <div style={{
+          maxHeight: mobileOpen ? 600 : 0, overflow: "hidden",
+          transition: "max-height 0.4s cubic-bezier(.22,1,.36,1)",
+          background: "white", border: mobileOpen ? "1px solid var(--border-light)" : "1px solid transparent",
+          borderTop: "none", borderRadius: "0 0 8px 8px", marginTop: -1,
+        }}>
+          <div style={{ padding: "8px 0" }}>
+            {TERMS_SECTIONS.map((s) => {
+              const isActive = activeSection === s.num;
+              return (
+                <a
+                  key={s.num}
+                  href={`#section-${s.num}`}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "10px 20px",
+                    fontSize: 13, fontWeight: isActive ? 400 : 300,
+                    color: isActive ? "var(--fg)" : "var(--muted)",
+                    textDecoration: "none",
+                    background: isActive ? "rgba(228,208,72,0.04)" : "transparent",
+                    transition: "all 0.2s",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: isActive ? "var(--accent)" : "var(--muted)", minWidth: 20, opacity: isActive ? 1 : 0.5 }}>{s.num}</span>
+                  {s.title}
+                </a>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </nav>
   );
@@ -169,7 +239,6 @@ export default function OrvelloTerms() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  /* Track which section is in view */
   useEffect(() => {
     const observers = [];
     TERMS_SECTIONS.forEach((s) => {
@@ -184,8 +253,6 @@ export default function OrvelloTerms() {
     });
     return () => observers.forEach(o => o.disconnect());
   }, []);
-
-  const scrollTo = (id) => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
 
   return (
     <div className="orvello-root">
@@ -219,16 +286,23 @@ export default function OrvelloTerms() {
           background:var(--bg);
           box-shadow:0 4px 60px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.08);
         }
-        .toc-sidebar{display:block}
         .terms-layout{display:grid;grid-template-columns:220px 1fr;gap:60px;align-items:start}
         .terms-section{scroll-margin-top:100px}
 
+        /* Desktop: show sticky sidebar, hide mobile dropdown */
+        .toc-desktop{display:block}
+        .toc-mobile{display:none}
+
         @media(max-width:900px){
           .desktop-nav{display:none!important}.hamburger{display:flex!important}
-          .toc-sidebar{display:none!important}
           .terms-layout{grid-template-columns:1fr!important;gap:0!important}
           .header-card{border-radius:14px}
-          .toc-grid{grid-template-columns:1fr!important}
+          .footer-grid{grid-template-columns:1fr!important;gap:32px!important}
+
+          /* Mobile: hide sticky sidebar, show dropdown */
+          .toc-desktop{display:none!important}
+          .toc-mobile{display:block!important;margin-bottom:32px}
+          .toc-sidebar{position:sticky;top:68;z-index:50;padding-bottom:16px}
         }
       `}</style>
 
@@ -254,14 +328,13 @@ export default function OrvelloTerms() {
         </div>
       )}
 
-      {/* ═══ HEADER — same light bg + rounded dark card pattern ═══ */}
+      {/* ═══ HEADER ═══ */}
       <section style={{ background: "var(--hero-top-bg)", padding: "0 clamp(12px, 2.5vw, 32px)", paddingBottom: "clamp(40px, 5vw, 64px)" }}>
         <div style={{ height: 68 }} />
         <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
           <Reveal delay={0.04}>
             <div className="header-card" style={{ padding: "clamp(48px, 7vw, 88px) clamp(36px, 6vw, 88px)", position: "relative" }}>
               <HeaderGrain />
-              {/* Subtle accent glow */}
               <div style={{ position: "absolute", top: "20%", right: "15%", width: "40%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle, rgba(228,208,72,0.06) 0%, transparent 60%)", filter: "blur(50px)", pointerEvents: "none", zIndex: 0 }} />
               <div style={{ position: "relative", zIndex: 2 }}>
                 <Reveal delay={0.08}>
@@ -283,7 +356,7 @@ export default function OrvelloTerms() {
                   <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>Last updated: 21 March 2026</span>
                     <span style={{ width: 4, height: 4, background: "rgba(255,255,255,0.15)", borderRadius: "50%", display: "inline-block" }} />
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>14 sections</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "rgba(255,255,255,0.35)", fontWeight: 300 }}>{TERMS_SECTIONS.length} sections</span>
                   </div>
                 </Reveal>
               </div>
@@ -296,45 +369,11 @@ export default function OrvelloTerms() {
       <section style={{ padding: "clamp(48px, 6vw, 80px) var(--px)", background: "var(--bg-light)" }}>
         <div style={{ maxWidth: "var(--max-w)", margin: "0 auto" }}>
           <div className="terms-layout">
-            {/* Sticky sidebar TOC */}
+            {/* Sidebar TOC — sticky on desktop, collapsible dropdown on mobile */}
             <TOCSidebar activeSection={activeSection} />
 
             {/* Content */}
             <div>
-              {/* Inline contents */}
-              <Reveal>
-                <div style={{
-                  background: "white", border: "1px solid var(--border-light)",
-                  borderRadius: 8, padding: "clamp(24px, 3vw, 36px)",
-                  marginBottom: 56,
-                }}>
-                  <div className="mono-label" style={{ color: "var(--muted)", marginBottom: 20, fontSize: 10 }}>Contents</div>
-                  <div className="toc-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 32px" }}>
-                    {TERMS_SECTIONS.map((s) => (
-                      <a
-                        key={s.num}
-                        href={`#section-${s.num}`}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 10,
-                          padding: "9px 0",
-                          fontSize: 13, fontWeight: 300,
-                          color: "var(--muted)",
-                          textDecoration: "none",
-                          transition: "color 0.2s",
-                          borderBottom: "1px solid var(--border-light)",
-                          lineHeight: 1.3,
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.color = "var(--fg)"}
-                        onMouseLeave={e => e.currentTarget.style.color = "var(--muted)"}
-                      >
-                        <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--accent)", minWidth: 20, opacity: 0.6 }}>{s.num}</span>
-                        {s.title}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              </Reveal>
-
               {TERMS_SECTIONS.map((s, i) => (
                 <Reveal key={s.num} delay={Math.min(i * 0.03, 0.2)}>
                   <div
@@ -430,12 +469,6 @@ export default function OrvelloTerms() {
           </div>
         </div>
       </footer>
-
-      <style>{`
-        @media(max-width:900px){
-          .footer-grid{grid-template-columns:1fr!important;gap:32px!important}
-        }
-      `}</style>
     </div>
   );
 }
