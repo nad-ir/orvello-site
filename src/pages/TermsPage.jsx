@@ -180,8 +180,8 @@ function TOCSidebar({ activeSection }) {
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "12px 16px", background: "white", border: "1px solid var(--border-light)",
-            borderRadius: 8, cursor: "pointer", fontFamily: "var(--font-body)",
-            fontSize: 13, fontWeight: 400, color: "var(--fg)",
+            borderRadius: mobileOpen ? "10px 10px 0 0" : 10, cursor: "pointer", fontFamily: "var(--font-body)",
+            fontSize: 13, fontWeight: 400, color: "var(--fg)", transition: "border-radius 0.2s",
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -194,7 +194,7 @@ function TOCSidebar({ activeSection }) {
           maxHeight: mobileOpen ? 400 : 0, overflow: "hidden",
           transition: "max-height 0.4s cubic-bezier(.22,1,.36,1)",
           background: "white", border: mobileOpen ? "1px solid var(--border-light)" : "1px solid transparent",
-          borderTop: "none", borderRadius: "0 0 8px 8px", marginTop: -1,
+          borderTop: mobileOpen ? "1px solid var(--border-light)" : "none", borderRadius: "0 0 10px 10px", marginTop: -1,
         }}>
           <div style={{ padding: "4px 0", maxHeight: 380, overflowY: "auto" }}>
             {TERMS_SECTIONS.map((s) => {
