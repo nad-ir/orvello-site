@@ -179,9 +179,9 @@ function TOCSidebar({ activeSection }) {
           onClick={() => setMobileOpen(!mobileOpen)}
           style={{
             width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "16px 20px", background: "white", border: "1px solid var(--border-light)",
+            padding: "12px 16px", background: "white", border: "1px solid var(--border-light)",
             borderRadius: 8, cursor: "pointer", fontFamily: "var(--font-body)",
-            fontSize: 14, fontWeight: 400, color: "var(--fg)",
+            fontSize: 13, fontWeight: 400, color: "var(--fg)",
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -191,12 +191,12 @@ function TOCSidebar({ activeSection }) {
           <ChevronDown size={16} style={{ color: "var(--muted)", transition: "transform 0.3s", transform: mobileOpen ? "rotate(180deg)" : "rotate(0)" }} />
         </button>
         <div style={{
-          maxHeight: mobileOpen ? 600 : 0, overflow: "hidden",
+          maxHeight: mobileOpen ? 400 : 0, overflow: "hidden",
           transition: "max-height 0.4s cubic-bezier(.22,1,.36,1)",
           background: "white", border: mobileOpen ? "1px solid var(--border-light)" : "1px solid transparent",
           borderTop: "none", borderRadius: "0 0 8px 8px", marginTop: -1,
         }}>
-          <div style={{ padding: "8px 0" }}>
+          <div style={{ padding: "4px 0", maxHeight: 380, overflowY: "auto" }}>
             {TERMS_SECTIONS.map((s) => {
               const isActive = activeSection === s.num;
               return (
@@ -206,13 +206,13 @@ function TOCSidebar({ activeSection }) {
                   onClick={() => setMobileOpen(false)}
                   style={{
                     display: "flex", alignItems: "center", gap: 10,
-                    padding: "10px 20px",
+                    padding: "8px 16px",
                     fontSize: 13, fontWeight: isActive ? 400 : 300,
                     color: isActive ? "var(--fg)" : "var(--muted)",
                     textDecoration: "none",
                     background: isActive ? "rgba(228,208,72,0.04)" : "transparent",
                     transition: "all 0.2s",
-                    lineHeight: 1.4,
+                    lineHeight: 1.3,
                   }}
                 >
                   <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: isActive ? "var(--accent)" : "var(--muted)", minWidth: 20, opacity: isActive ? 1 : 0.5 }}>{s.num}</span>
@@ -301,8 +301,8 @@ export default function OrvelloTerms() {
 
           /* Mobile: hide sticky sidebar, show dropdown */
           .toc-desktop{display:none!important}
-          .toc-mobile{display:block!important;margin-bottom:32px}
-          .toc-sidebar{position:sticky;top:68;z-index:50;padding-bottom:16px}
+          .toc-mobile{display:block!important;margin-bottom:24px}
+          .toc-sidebar{position:sticky;top:60px;z-index:50;background:var(--bg-light);padding:12px 0}
         }
       `}</style>
 
