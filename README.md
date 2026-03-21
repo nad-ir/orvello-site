@@ -1,4 +1,4 @@
-# Orvello — Construction Consultancy Website
+# Orvello
 
 Static site built with **Vite + React + React Router**, deployed on **Cloudflare Pages**.
 
