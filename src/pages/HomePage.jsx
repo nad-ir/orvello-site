@@ -10,13 +10,34 @@ const SERVICES = [
 ];
 
 const FAQ_DATA = [
-  { q: "What is an EPC and do I need one?", a: "An Energy Performance Certificate rates your property's energy efficiency from A to G. You're legally required to have a valid EPC when selling, renting, or letting a property. EPCs are valid for 10 years." },
-  { q: "How long does an EPC assessment take?", a: "A typical domestic EPC assessment takes 30–60 minutes depending on the size of the property. We aim to have your certificate lodged and sent to you within 24–48 hours of the visit." },
-  { q: "What areas do you cover?", a: "We cover the whole of Northamptonshire, including Kettering, Wellingborough, Corby, Daventry, and Towcester, as well as surrounding areas by arrangement." },
-  { q: "What is a PAS2035 retrofit assessment?", a: "PAS2035 is the UK standard for retrofitting dwellings for improved energy efficiency. A retrofit assessment evaluates your property's current condition, then recommends a suitable improvement pathway. Required for ECO and GBIS schemes." },
-  { q: "What does a CDM Principal Designer do?", a: "Under CDM 2015, the Principal Designer plans, manages, and coordinates health and safety during the pre-construction phase. We ensure design risks are identified, produce pre-construction information packs, and compile the H&S file." },
-  { q: "Do you offer bulk or portfolio pricing?", a: "Yes. We offer discounted rates for landlords, housing associations, and estate agents with multiple properties. Get in touch with your requirements for tailored pricing." },
-  { q: "How do I book an assessment?", a: "Book directly through our website using the booking buttons for EPC or retrofit assessments. For CDM and fire risk enquiries, use the contact form below." },
+  { 
+    q: "What is an EPC and do I need one?", 
+    a: "An Energy Performance Certificate (EPC) rates your property's energy efficiency from A to G. A valid EPC is legally required when selling, letting or renting a property. Certificates remain valid for 10 years." 
+  },
+  { 
+    q: "How long does an EPC assessment take?", 
+    a: "Most domestic EPC assessments take 30–60 minutes, depending on property size and layout. Your certificate is typically lodged and issued within 24–48 hours of the visit." 
+  },
+  { 
+    q: "What areas do you cover?", 
+    a: "We cover Northampton and the wider Northamptonshire area, including Kettering, Wellingborough, Corby, Daventry and Towcester. Surrounding areas can be accommodated by arrangement." 
+  },
+  { 
+    q: "What is a PAS2035 retrofit assessment?", 
+    a: "PAS2035 is the UK standard for domestic retrofit. A retrofit assessment reviews your property’s condition, occupancy and energy performance, then defines a compliant improvement pathway. Required for schemes such as ECO4 and the Great British Insulation Scheme." 
+  },
+  { 
+    q: "What does a CDM Principal Designer do?", 
+    a: "Under CDM 2015, the Principal Designer is responsible for planning, managing and coordinating health and safety during the pre-construction phase. This includes identifying design risks, preparing pre-construction information, and ensuring compliance throughout the project lifecycle." 
+  },
+  { 
+    q: "Do you offer bulk or portfolio pricing?", 
+    a: "Yes — we provide structured pricing for landlords, estate agents and organisations with multiple properties. Contact us with your requirements for a tailored quote." 
+  },
+  { 
+    q: "How do I book an assessment?", 
+    a: "You can book directly online using our instant pricing tool for EPC and retrofit assessments. For CDM or fire risk enquiries, submit a request via the contact form and we’ll respond promptly." 
+  },
 ];
 
 function useInView(threshold = 0.12) {
@@ -424,7 +445,7 @@ export default function HomePage() {
                 <Reveal delay={0.08}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32 }}>
                     <span style={{ width: 8, height: 8, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Safe design · Trusted advice</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Construction Consultancy</span>
                   </div>
                 </Reveal>
                 <Reveal delay={0.12}>
