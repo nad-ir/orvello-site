@@ -423,7 +423,7 @@ export default function OrvelloSite() {
                 <Reveal delay={0.08}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32 }}>
                     <span style={{ width: 8, height: 8, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Safe design · Trusted advice</span>
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", fontWeight: 400 }}>Construction Consultancy</span>
                   </div>
                 </Reveal>
                 <Reveal delay={0.12}>
