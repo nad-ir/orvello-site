@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import HomePage from './pages/HomePage'
 import TermsPage from './pages/TermsPage'
 import ClientPage from './pages/ClientPage'
+import GeneratorPage from './pages/GeneratorPage'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/client" element={<ClientPage />} />
+        <Route path="/generate" element={<GeneratorPage />} />
       </Routes>
     </>
   )
