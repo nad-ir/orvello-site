@@ -131,8 +131,8 @@ export default function EpcPage(){
         .s-tag{font-family:var(--f-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:400;display:flex;align-items:center;gap:10px;margin-bottom:16px}
         .s-tag::before{content:'';width:24px;height:1px;background:currentColor;opacity:0.3}
         .s-title{font-family:var(--f-display);font-size:clamp(26px,4vw,40px);font-weight:300;letter-spacing:-0.025em;line-height:1.12}
-        .stat-card{background:var(--bg-white);border:1px solid var(--border);border-radius:14px;padding:clamp(20px,3vw,28px);transition:all 0.3s;cursor:default}
-        .stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.05);border-color:#D0CEC8}
+        .stat-card{background:rgba(255,255,255,0.7);backdrop-filter:blur(20px) saturate(1.2);border:1px solid rgba(255,255,255,0.6);border-radius:16px;padding:clamp(22px,3vw,30px);transition:all 0.35s cubic-bezier(.22,1,.36,1);cursor:default;box-shadow:0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)}
+        .stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.07);border-color:rgba(255,255,255,0.8)}
         .icon-box{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
         .header-card{position:relative;overflow:hidden;border-radius:20px;background:var(--bg-dark);box-shadow:0 4px 60px rgba(0,0,0,0.18),0 1px 3px rgba(0,0,0,0.08)}
         .effort-tag{font-family:var(--f-mono);font-size:9px;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:4px;font-weight:500;white-space:nowrap}
@@ -197,19 +197,21 @@ export default function EpcPage(){
             </Reveal>
             <Reveal delay={0.1}>
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                <div className="stat-card">
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><div className="icon-box" style={{background:"rgba(196,122,24,0.08)",border:"1px solid rgba(196,122,24,0.15)"}}><Flame size={18} style={{color:"#C47A18"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. annual cost</span></div>
-                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(34px,4.5vw,46px)",fontWeight:300,letterSpacing:"-0.025em"}}>£<CountUp target={annual}/></div>
-                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:6}}>Based on current energy prices</div>
+                <div className="stat-card" style={{borderTop:"3px solid rgba(196,122,24,0.35)",position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:"radial-gradient(circle at top right, rgba(196,122,24,0.04) 0%, transparent 60%)",pointerEvents:"none"}}/>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,position:"relative"}}><div className="icon-box" style={{background:"rgba(196,122,24,0.08)",border:"1px solid rgba(196,122,24,0.15)",width:48,height:48,borderRadius:14}}><Flame size={20} style={{color:"#C47A18"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. annual cost</span></div>
+                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(36px,5vw,50px)",fontWeight:300,letterSpacing:"-0.025em",position:"relative"}}>£<CountUp target={annual}/></div>
+                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:8,position:"relative"}}>Based on current energy prices</div>
                 </div>
-                <div className="stat-card">
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}><div className="icon-box" style={{background:"rgba(90,158,46,0.08)",border:"1px solid rgba(90,158,46,0.15)"}}><Zap size={18} style={{color:"#5A9E2E"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. monthly cost</span></div>
-                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(34px,4.5vw,46px)",fontWeight:300,letterSpacing:"-0.025em"}}>£<CountUp target={monthly}/></div>
-                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:6}}>Approximate monthly average</div>
+                <div className="stat-card" style={{borderTop:"3px solid rgba(90,158,46,0.35)",position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:"radial-gradient(circle at top right, rgba(90,158,46,0.04) 0%, transparent 60%)",pointerEvents:"none"}}/>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,position:"relative"}}><div className="icon-box" style={{background:"rgba(90,158,46,0.08)",border:"1px solid rgba(90,158,46,0.15)",width:48,height:48,borderRadius:14}}><Zap size={20} style={{color:"#5A9E2E"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. monthly cost</span></div>
+                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(36px,5vw,50px)",fontWeight:300,letterSpacing:"-0.025em",position:"relative"}}>£<CountUp target={monthly}/></div>
+                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:8,position:"relative"}}>Approximate monthly average</div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                  <div className="stat-card"><div className="icon-box" style={{background:"rgba(196,154,26,0.08)",border:"1px solid rgba(196,154,26,0.15)",marginBottom:12}}><Thermometer size={16} style={{color:"#C49A1A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:6}}>Heating</div><div style={{fontSize:15,fontWeight:400}}>{h.l}</div></div>
-                  <div className="stat-card"><div className="icon-box" style={{background:"rgba(90,122,138,0.08)",border:"1px solid rgba(90,122,138,0.15)",marginBottom:12}}><Home size={16} style={{color:"#5A7A8A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:6}}>Insulation</div><div style={{fontSize:15,fontWeight:400}}>{ins.l}</div></div>
+                  <div className="stat-card" style={{borderTop:"3px solid rgba(196,154,26,0.25)"}}><div className="icon-box" style={{background:"rgba(196,154,26,0.08)",border:"1px solid rgba(196,154,26,0.15)",marginBottom:14,width:48,height:48,borderRadius:14}}><Thermometer size={18} style={{color:"#C49A1A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:8}}>Heating</div><div style={{fontSize:16,fontWeight:400}}>{h.l}</div></div>
+                  <div className="stat-card" style={{borderTop:"3px solid rgba(90,122,138,0.25)"}}><div className="icon-box" style={{background:"rgba(90,122,138,0.08)",border:"1px solid rgba(90,122,138,0.15)",marginBottom:14,width:48,height:48,borderRadius:14}}><Home size={18} style={{color:"#5A7A8A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:8}}>Insulation</div><div style={{fontSize:16,fontWeight:400}}>{ins.l}</div></div>
                 </div>
                 {pr!==params.rating&&(
                   <div className="stat-card" style={{background:prD.bg,borderColor:prD.bdr}}>
@@ -274,28 +276,39 @@ export default function EpcPage(){
           <div className="review-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,alignItems:"stretch"}}>
             {/* GOV.UK */}
             <Reveal>
-              <div style={{background:"var(--bg-white)",border:"1px solid var(--border)",borderRadius:14,padding:"clamp(24px,3vw,32px)",height:"100%",display:"flex",flexDirection:"column"}}>
-                <div className="icon-box" style={{background:"rgba(27,138,58,0.08)",border:"1px solid rgba(27,138,58,0.15)",marginBottom:20}}><Shield size={20} style={{color:"#1B8A3A"}}/></div>
-                <h3 style={{fontFamily:"var(--f-display)",fontSize:18,fontWeight:400,letterSpacing:"-0.01em",marginBottom:10}}>Official EPC register</h3>
-                <p style={{fontSize:13,color:"var(--muted)",fontWeight:300,lineHeight:1.75,marginBottom:20,flex:1}}>Your certificate will typically appear on the GOV.UK register within 24 hours of lodgement. Once lodged, it's valid for 10 years.</p>
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 18px",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,color:"var(--fg)",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:500,letterSpacing:"0.05em",textTransform:"uppercase",textDecoration:"none",transition:"all 0.25s",alignSelf:"flex-start"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#C0BEB8";e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.05)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="none"}}><Shield size={11}/> View on GOV.UK <ExternalLink size={10}/></a>
+              <div style={{background:"rgba(255,255,255,0.7)",backdropFilter:"blur(20px) saturate(1.2)",border:"1px solid rgba(255,255,255,0.6)",borderRadius:16,padding:"clamp(28px,3vw,36px)",height:"100%",display:"flex",flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)",borderTop:"3px solid rgba(27,138,58,0.25)",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,left:0,width:"50%",height:"100%",background:"radial-gradient(circle at top left, rgba(27,138,58,0.03) 0%, transparent 50%)",pointerEvents:"none"}}/>
+                <div style={{position:"relative"}}>
+                  <div className="icon-box" style={{background:"rgba(27,138,58,0.08)",border:"1px solid rgba(27,138,58,0.15)",marginBottom:20,width:48,height:48,borderRadius:14}}><Shield size={20} style={{color:"#1B8A3A"}}/></div>
+                  <h3 style={{fontFamily:"var(--f-display)",fontSize:19,fontWeight:400,letterSpacing:"-0.01em",marginBottom:10}}>Official EPC register</h3>
+                  <p style={{fontSize:13,color:"var(--muted)",fontWeight:300,lineHeight:1.75,marginBottom:12}}>Your certificate will typically appear on the GOV.UK register within <strong style={{color:"var(--fg)",fontWeight:500}}>24 hours</strong> of lodgement.</p>
+                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 0",borderTop:"1px solid var(--border)",marginBottom:16}}>
+                    <Check size={14} style={{color:"#1B8A3A"}}/>
+                    <span style={{fontSize:12,color:"var(--muted)",fontWeight:300}}>Valid for 10 years once lodged</span>
+                  </div>
+                  <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"11px 20px",background:"rgba(27,138,58,0.08)",border:"1px solid rgba(27,138,58,0.15)",borderRadius:10,color:"#1B8A3A",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:500,letterSpacing:"0.05em",textTransform:"uppercase",textDecoration:"none",transition:"all 0.25s",alignSelf:"flex-start",marginTop:"auto"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(27,138,58,0.14)";e.currentTarget.style.transform="translateY(-1px)"}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(27,138,58,0.08)";e.currentTarget.style.transform="translateY(0)"}}><Shield size={11}/> View on GOV.UK <ExternalLink size={10}/></a>
+                </div>
               </div>
             </Reveal>
             {/* Review */}
             <Reveal delay={0.08}>
-              <div style={{background:"var(--bg-white)",border:"1px solid var(--border)",borderRadius:14,padding:"clamp(24px,3vw,32px)",height:"100%",display:"flex",flexDirection:"column"}}>
-                <div style={{display:"flex",gap:3,marginBottom:20}}>
-                  {[1,2,3,4,5].map(i=><Star key={i} size={18} fill="#E4D048" color="#E4D048"/>)}
-                </div>
-                <h3 style={{fontFamily:"var(--f-display)",fontSize:18,fontWeight:400,letterSpacing:"-0.01em",marginBottom:10}}>How was your experience?</h3>
-                <p style={{fontSize:13,color:"var(--muted)",fontWeight:300,lineHeight:1.75,marginBottom:20,flex:1}}>Your feedback helps us improve and helps other homeowners find a trusted assessor in Northamptonshire.</p>
-                {reviewDone?(
-                  <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 18px",background:"rgba(27,138,58,0.06)",border:"1px solid rgba(27,138,58,0.12)",borderRadius:8,color:"#1B8A3A",fontFamily:"var(--f-mono)",fontSize:11,fontWeight:500,letterSpacing:"0.04em",alignSelf:"flex-start"}}><Check size={14}/> Thank you for your feedback</div>
-                ):(
-                  <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                    <a href="https://g.page/r/orvello/review" target="_blank" rel="noopener noreferrer" onClick={()=>setReviewDone(true)} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 18px",background:"var(--accent)",color:"var(--bg-dark)",borderRadius:8,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:500,letterSpacing:"0.05em",textTransform:"uppercase",transition:"all 0.25s"}} onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.06)"}} onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)"}}><Star size={12}/> Leave a review</a>
+              <div style={{background:"rgba(255,255,255,0.7)",backdropFilter:"blur(20px) saturate(1.2)",border:"1px solid rgba(255,255,255,0.6)",borderRadius:16,padding:"clamp(28px,3vw,36px)",height:"100%",display:"flex",flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)",borderTop:"3px solid rgba(228,208,72,0.35)",position:"relative",overflow:"hidden"}}>
+                <div style={{position:"absolute",top:0,right:0,width:"50%",height:"100%",background:"radial-gradient(circle at top right, rgba(228,208,72,0.04) 0%, transparent 50%)",pointerEvents:"none"}}/>
+                <div style={{position:"relative"}}>
+                  <div style={{display:"flex",gap:4,marginBottom:20}}>
+                    {[1,2,3,4,5].map(i=><Star key={i} size={20} fill="#E4D048" color="#D4C038" strokeWidth={1.5}/>)}
                   </div>
-                )}
+                  <h3 style={{fontFamily:"var(--f-display)",fontSize:19,fontWeight:400,letterSpacing:"-0.01em",marginBottom:10}}>How was your <em style={{fontStyle:"italic",fontWeight:300}}>experience?</em></h3>
+                  <p style={{fontSize:13,color:"var(--muted)",fontWeight:300,lineHeight:1.75,marginBottom:20}}>Your feedback helps us improve and helps other homeowners find a trusted assessor in Northamptonshire.</p>
+                  {reviewDone?(
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"12px 18px",background:"rgba(27,138,58,0.06)",border:"1px solid rgba(27,138,58,0.12)",borderRadius:10,color:"#1B8A3A",fontFamily:"var(--f-mono)",fontSize:11,fontWeight:500,letterSpacing:"0.04em"}}><Check size={14}/> Thank you for your feedback</div>
+                  ):(
+                    <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:"auto"}}>
+                      <a href="https://g.page/r/orvello/review" target="_blank" rel="noopener noreferrer" onClick={()=>setReviewDone(true)} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"11px 20px",background:"var(--accent)",color:"var(--bg-dark)",borderRadius:10,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:500,letterSpacing:"0.05em",textTransform:"uppercase",transition:"all 0.25s"}} onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.06)";e.currentTarget.style.transform="translateY(-1px)"}} onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)";e.currentTarget.style.transform="translateY(0)"}}><Star size={12}/> Leave a review</a>
+                      <a href="mailto:hello@orvello.co.uk?subject=EPC Feedback" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"11px 20px",background:"transparent",color:"var(--fg)",border:"1px solid var(--border)",borderRadius:10,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:400,letterSpacing:"0.05em",textTransform:"uppercase",transition:"all 0.25s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#C0BEB8";e.currentTarget.style.transform="translateY(-1px)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.transform="translateY(0)"}}>Send feedback</a>
+                    </div>
+                  )}
+                </div>
               </div>
             </Reveal>
           </div>
