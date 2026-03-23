@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { ExternalLink, TrendingUp, Flame, Thermometer, Zap, Home, ArrowRight, Lightbulb, ArrowUpRight, Shield, Award, BarChart3, PiggyBank, Wrench, CheckCircle2 } from "lucide-react";
+import { ExternalLink, TrendingUp, Flame, Thermometer, Zap, Home, ArrowRight, Lightbulb, Shield, Wrench, Star, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 
 /* ═══ DATA ═══ */
@@ -35,31 +35,25 @@ function parseParams(){const p=new URLSearchParams(window.location.search);const
 function useInView(t=0.12){const ref=useRef(null);const[v,setV]=useState(false);useEffect(()=>{const el=ref.current;if(!el)return;const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){setV(true);o.unobserve(el)}},{threshold:t});o.observe(el);return()=>o.disconnect()},[t]);return[ref,v];}
 function Reveal({children,delay=0,style={}}){const[ref,v]=useInView();return<div ref={ref} style={{...style,opacity:v?1:0,transform:v?"translateY(0)":"translateY(24px)",transition:`opacity 0.8s cubic-bezier(.22,1,.36,1) ${delay}s, transform 0.8s cubic-bezier(.22,1,.36,1) ${delay}s`}}>{children}</div>;}
 
-function RecIcon({type,color}){
-  const s={color,flexShrink:0};
-  if(type==="thermo")return<Thermometer size={18} style={s}/>;
-  if(type==="flame")return<Flame size={18} style={s}/>;
-  if(type==="zap")return<Zap size={18} style={s}/>;
-  if(type==="bulb")return<Lightbulb size={18} style={s}/>;
-  if(type==="home")return<Home size={18} style={s}/>;
-  return<Wrench size={18} style={s}/>;
-}
+function RecIcon({type,color}){const s={color,flexShrink:0};if(type==="thermo")return<Thermometer size={18} style={s}/>;if(type==="flame")return<Flame size={18} style={s}/>;if(type==="zap")return<Zap size={18} style={s}/>;if(type==="bulb")return<Lightbulb size={18} style={s}/>;if(type==="home")return<Home size={18} style={s}/>;return<Wrench size={18} style={s}/>;}
+
+function HeaderGrain(){const ref=useRef(null);useEffect(()=>{const c=ref.current;if(!c)return;c.width=512;c.height=512;const ctx=c.getContext("2d");const img=ctx.createImageData(512,512);for(let i=0;i<img.data.length;i+=4){const v=Math.random()*255;img.data[i]=v;img.data[i+1]=v;img.data[i+2]=v;img.data[i+3]=16;}ctx.putImageData(img,0,0);},[]);return<canvas ref={ref} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",opacity:0.5,mixBlendMode:"overlay",borderRadius:"inherit",zIndex:1}}/>;}
 
 function Scale({current}){
   const bands="ABCDEFG".split("");
   const colors=["#1B8A3A","#2D8E3B","#5A9E2E","#C49A1A","#C47A18","#B85A1A","#A83030"];
-  const widths=[30,37,44,52,60,68,78];
+  const widths=[32,39,46,54,62,70,80];
   return(
-    <div style={{display:"flex",flexDirection:"column",gap:5}}>
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
       {bands.map((b,i)=>{
         const a=b===current;
         return(
-          <div key={b} style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:`${widths[i]}%`,height:a?36:26,background:a?colors[i]:`${colors[i]}15`,borderRadius:a?6:4,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 14px",transition:"all 0.5s cubic-bezier(.22,1,.36,1)",border:a?`2px solid ${colors[i]}`:"1px solid transparent",boxShadow:a?`0 3px 12px ${colors[i]}20`:"none"}}>
-              <span style={{fontFamily:"var(--f-mono)",fontSize:a?14:11,fontWeight:a?600:400,color:a?"white":colors[i],letterSpacing:"0.03em"}}>{b}</span>
-              <span style={{fontFamily:"var(--f-mono)",fontSize:a?10:9,color:a?"rgba(255,255,255,0.7)":`${colors[i]}60`}}>{R[b].score}</span>
+          <div key={b} style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:`${widths[i]}%`,height:a?42:30,background:a?colors[i]:`${colors[i]}15`,borderRadius:a?8:5,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 16px",transition:"all 0.5s cubic-bezier(.22,1,.36,1)",border:a?`2px solid ${colors[i]}`:"1px solid transparent",boxShadow:a?`0 3px 12px ${colors[i]}20`:"none"}}>
+              <span style={{fontFamily:"var(--f-mono)",fontSize:a?16:12,fontWeight:a?600:400,color:a?"white":colors[i],letterSpacing:"0.03em"}}>{b}</span>
+              <span style={{fontFamily:"var(--f-mono)",fontSize:a?12:10,color:a?"rgba(255,255,255,0.7)":`${colors[i]}60`}}>{R[b].score}</span>
             </div>
-            {a&&<span style={{fontFamily:"var(--f-mono)",fontSize:10,color:colors[i],fontWeight:500,whiteSpace:"nowrap"}}>← Your property</span>}
+            {a&&<span style={{fontFamily:"var(--f-mono)",fontSize:11,color:colors[i],fontWeight:500,whiteSpace:"nowrap"}}>← Your property</span>}
           </div>
         );
       })}
@@ -71,9 +65,11 @@ function Scale({current}){
 export default function EpcPage(){
   const params=useMemo(()=>parseParams(),[]);
   const data=useMemo(()=>params?engine(params.rating,params.heating,params.insulation):null,[params]);
+  const[scrolled,setScrolled]=useState(false);
+  useEffect(()=>{const fn=()=>setScrolled(window.scrollY>40);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
 
   if(!params)return(
-    <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",background:"#F7F6F3",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+    <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",background:"#E7E5DF",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
       <div style={{textAlign:"center",maxWidth:400}}>
         <h1 style={{fontSize:24,fontWeight:400,color:"#1A1A18",marginBottom:12}}>EPC not found</h1>
         <p style={{fontSize:14,color:"#8A8A80",fontWeight:300,marginBottom:24}}>This link is missing or invalid. Please contact us.</p>
@@ -91,10 +87,12 @@ export default function EpcPage(){
         @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,300;12..96,400;12..96,500;12..96,600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
         *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
         html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
-        :root{--bg-light:#F7F6F3;--bg-white:white;--bg-dark:#272420;--fg:#1A1A18;--fg-light:#F0EEE8;--muted:#8A8A80;--accent:#E4D048;--border:#E8E6E0;--f-display:'Bricolage Grotesque',sans-serif;--f-body:'Bricolage Grotesque',sans-serif;--f-mono:'IBM Plex Mono',monospace;--max-w:1100px;--px:clamp(20px,5vw,72px)}
-        .epc{font-family:var(--f-body);background:var(--bg-light);color:var(--fg);min-height:100vh}
+        :root{--bg:#E7E5DF;--bg-white:white;--bg-dark:#272420;--fg:#1A1A18;--fg-light:#F0EEE8;--muted:#8A8A80;--accent:#E4D048;--border:#DDDBD5;--f-display:'Bricolage Grotesque',sans-serif;--f-body:'Bricolage Grotesque',sans-serif;--f-mono:'IBM Plex Mono',monospace;--max-w:1100px;--px:clamp(20px,5vw,72px);--card-px:clamp(12px,2.5vw,32px)}
+        .epc{font-family:var(--f-body);background:var(--bg);color:var(--fg);min-height:100vh}
         .mono{font-family:var(--f-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;font-weight:400}
-        .epc-nav{position:sticky;top:0;z-index:50;background:rgba(247,246,243,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 var(--px);height:56px;display:flex;align-items:center;justify-content:space-between}
+
+        .nav-link{font-family:var(--f-mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:all 0.2s;background:none;border:none;font-weight:400;padding:0}
+
         .section{padding:clamp(56px,8vw,100px) var(--px)}
         .section-inner{max-width:var(--max-w);margin:0 auto}
         .s-tag{font-family:var(--f-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:400;display:flex;align-items:center;gap:10px;margin-bottom:16px}
@@ -113,28 +111,52 @@ export default function EpcPage(){
 
         .icon-box{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-        @media(max-width:800px){.hero-grid{grid-template-columns:1fr!important}.context-grid{grid-template-columns:1fr!important}.cta-inner{flex-direction:column!important;align-items:flex-start!important}.stat-grid-4{grid-template-columns:1fr 1fr!important}}
+        .header-card{position:relative;overflow:hidden;border-radius:20px;background:var(--bg-dark);box-shadow:0 4px 60px rgba(0,0,0,0.18),0 1px 3px rgba(0,0,0,0.08)}
+
+        .review-card{background:var(--bg-white);border:1px solid var(--border);border-radius:14px;padding:clamp(24px,4vw,36px);text-align:center}
+
+        @media(max-width:800px){
+          .hero-grid{grid-template-columns:1fr!important}
+          .context-grid{grid-template-columns:1fr!important}
+          .cta-inner{flex-direction:column!important;align-items:flex-start!important}
+          .header-card{border-radius:14px}
+        }
       `}</style>
 
-      {/* NAV */}
-      <nav className="epc-nav">
-        <Link to="/" style={{display:"flex",alignItems:"baseline",textDecoration:"none",gap:3}}>
-          <span style={{fontFamily:"var(--f-display)",fontSize:17,fontWeight:400,color:"var(--fg)"}}>Orvello</span>
-          <span style={{width:3,height:3,background:"var(--accent)",display:"inline-block",borderRadius:1}}/>
-        </Link>
-        <div style={{display:"flex",alignItems:"center",gap:14}}>
-          {params.ref&&<span className="mono" style={{color:"var(--muted)"}}>Ref: {params.ref}</span>}
-          <a href="https://orvello.co.uk" target="_blank" rel="noopener noreferrer" className="mono" style={{color:"var(--fg)",textDecoration:"none",padding:"5px 12px",border:"1px solid var(--border)",borderRadius:6,transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor="#C0BEB8"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>orvello.co.uk</a>
+      {/* NAV — no border, turns dark on scroll */}
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:scrolled?"rgba(39,36,32,0.92)":"transparent",backdropFilter:scrolled?"blur(20px) saturate(1.3)":"none",borderBottom:scrolled?"1px solid rgba(255,255,255,0.05)":"none",transition:"all 0.4s",padding:"0 var(--px)"}}>
+        <div style={{maxWidth:"var(--max-w)",margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:56}}>
+          <Link to="/" style={{display:"flex",alignItems:"baseline",textDecoration:"none",gap:3}}>
+            <span style={{fontFamily:"var(--f-display)",fontSize:17,fontWeight:400,color:scrolled?"var(--fg-light)":"var(--fg)",transition:"color 0.4s"}}>Orvello</span>
+            <span style={{width:3,height:3,background:"var(--accent)",display:"inline-block",borderRadius:1}}/>
+          </Link>
+          {params.ref&&<span className="mono" style={{color:scrolled?"rgba(255,255,255,0.4)":"var(--muted)",transition:"color 0.4s"}}>Ref: {params.ref}</span>}
         </div>
       </nav>
 
-      {/* ═══ HERO — Light bg ═══ */}
-      <div className="section" style={{background:"var(--bg-light)",paddingBottom:"clamp(32px,5vw,56px)"}}>
-        <div className="section-inner">
-          <Reveal>
-            <div className="s-tag" style={{color:"var(--muted)"}}>Energy Performance Certificate</div>
-            <h1 style={{fontFamily:"var(--f-display)",fontSize:"clamp(32px,5.5vw,52px)",fontWeight:300,letterSpacing:"-0.035em",lineHeight:1.08,marginBottom:12}}>{addr}</h1>
-            <p style={{fontSize:14,color:"var(--muted)",fontWeight:300}}>Assessment by Orvello{params.ref?` · ${params.ref}`:""}</p>
+      {/* ═══ HEADER — Dark rounded card like terms page ═══ */}
+      <div style={{background:"var(--bg)",padding:"0 var(--card-px)",paddingBottom:"clamp(40px,6vw,80px)"}}>
+        <div style={{height:68}}/>
+        <div style={{maxWidth:"var(--max-w)",margin:"0 auto"}}>
+          <Reveal delay={0.04}>
+            <div className="header-card" style={{padding:"clamp(48px,7vw,88px) clamp(36px,6vw,88px)",position:"relative"}}>
+              <HeaderGrain/>
+              <div style={{position:"absolute",top:"20%",right:"15%",width:"40%",height:"60%",borderRadius:"50%",background:"radial-gradient(circle, rgba(228,208,72,0.06) 0%, transparent 60%)",filter:"blur(50px)",pointerEvents:"none",zIndex:0}}/>
+              <div style={{position:"relative",zIndex:2}}>
+                <Reveal delay={0.08}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:28}}>
+                    <span style={{width:8,height:8,background:"var(--accent)",display:"inline-block",borderRadius:1}}/>
+                    <span style={{fontFamily:"var(--f-mono)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",fontWeight:400}}>Energy Performance Certificate</span>
+                  </div>
+                </Reveal>
+                <Reveal delay={0.12}>
+                  <h1 style={{fontFamily:"var(--f-display)",fontSize:"clamp(32px,5vw,52px)",fontWeight:300,letterSpacing:"-0.03em",lineHeight:1.08,color:"var(--fg-light)",marginBottom:12}}>{addr}</h1>
+                </Reveal>
+                <Reveal delay={0.16}>
+                  <p style={{fontSize:14,color:"rgba(255,255,255,0.35)",fontWeight:300}}>Assessment by Orvello{params.ref?` · ${params.ref}`:""}</p>
+                </Reveal>
+              </div>
+            </div>
           </Reveal>
         </div>
       </div>
@@ -142,15 +164,15 @@ export default function EpcPage(){
       {/* ═══ RATING — White bg ═══ */}
       <div className="section" style={{background:"var(--bg-white)",borderTop:"1px solid var(--border)",borderBottom:"1px solid var(--border)"}}>
         <div className="section-inner">
-          <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(40px,6vw,80px)",alignItems:"start"}}>
+          <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1.1fr 1fr",gap:"clamp(40px,6vw,80px)",alignItems:"start"}}>
             <Reveal>
-              <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:36}}>
-                <div style={{width:96,height:96,borderRadius:20,background:r.bg,border:`2px solid ${r.bdr}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <span style={{fontFamily:"var(--f-display)",fontSize:48,fontWeight:500,color:r.c,lineHeight:1}}>{params.rating}</span>
+              <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:40}}>
+                <div style={{width:100,height:100,borderRadius:22,background:r.bg,border:`2px solid ${r.bdr}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <span style={{fontFamily:"var(--f-display)",fontSize:52,fontWeight:500,color:r.c,lineHeight:1}}>{params.rating}</span>
                 </div>
                 <div>
-                  <div style={{fontSize:24,fontWeight:400,color:r.c,fontFamily:"var(--f-display)",letterSpacing:"-0.01em"}}>{r.label}</div>
-                  <div style={{fontSize:13,color:"var(--muted)",fontWeight:300,marginTop:4}}>{r.pos} of UK homes</div>
+                  <div style={{fontSize:26,fontWeight:400,color:r.c,fontFamily:"var(--f-display)",letterSpacing:"-0.01em"}}>{r.label}</div>
+                  <div style={{fontSize:14,color:"var(--muted)",fontWeight:300,marginTop:4}}>{r.pos} of UK homes</div>
                 </div>
               </div>
               <Scale current={params.rating}/>
@@ -158,25 +180,22 @@ export default function EpcPage(){
 
             <Reveal delay={0.1}>
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                {/* Annual */}
                 <div className="stat-card">
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
                     <div className="icon-box" style={{background:"rgba(196,122,24,0.08)",border:"1px solid rgba(196,122,24,0.15)"}}><Flame size={18} style={{color:"#C47A18"}}/></div>
                     <span className="mono" style={{color:"var(--muted)"}}>Est. annual cost</span>
                   </div>
-                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(34px,4.5vw,46px)",fontWeight:300,letterSpacing:"-0.025em",color:"var(--fg)"}}>£{annual.toLocaleString()}</div>
+                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(34px,4.5vw,46px)",fontWeight:300,letterSpacing:"-0.025em"}}>£{annual.toLocaleString()}</div>
                   <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:6}}>Based on current energy prices</div>
                 </div>
-                {/* Monthly */}
                 <div className="stat-card">
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
                     <div className="icon-box" style={{background:"rgba(90,158,46,0.08)",border:"1px solid rgba(90,158,46,0.15)"}}><Zap size={18} style={{color:"#5A9E2E"}}/></div>
                     <span className="mono" style={{color:"var(--muted)"}}>Est. monthly cost</span>
                   </div>
-                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(34px,4.5vw,46px)",fontWeight:300,letterSpacing:"-0.025em",color:"var(--fg)"}}>£{monthly}</div>
+                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(34px,4.5vw,46px)",fontWeight:300,letterSpacing:"-0.025em"}}>£{monthly}</div>
                   <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:6}}>Approximate monthly average</div>
                 </div>
-                {/* Heating + Insulation */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                   <div className="stat-card">
                     <div className="icon-box" style={{background:"rgba(196,154,26,0.08)",border:"1px solid rgba(196,154,26,0.15)",marginBottom:12}}><Thermometer size={16} style={{color:"#C49A1A"}}/></div>
@@ -189,7 +208,6 @@ export default function EpcPage(){
                     <div style={{fontSize:15,fontWeight:400}}>{ins.l}</div>
                   </div>
                 </div>
-                {/* Potential */}
                 {pr!==params.rating&&(
                   <div className="stat-card" style={{background:prD.bg,borderColor:prD.bdr}}>
                     <div style={{display:"flex",alignItems:"center",gap:14}}>
@@ -207,8 +225,8 @@ export default function EpcPage(){
         </div>
       </div>
 
-      {/* ═══ CONTEXT — Light bg ═══ */}
-      <div className="section" style={{background:"var(--bg-light)"}}>
+      {/* ═══ CONTEXT — #E7E5DF bg ═══ */}
+      <div className="section" style={{background:"var(--bg)"}}>
         <div className="section-inner">
           <div className="context-grid" style={{display:"grid",gridTemplateColumns:"1fr 1.5fr",gap:"clamp(40px,6vw,80px)",alignItems:"start"}}>
             <Reveal>
@@ -233,47 +251,29 @@ export default function EpcPage(){
             <div className="s-tag" style={{color:"var(--muted)"}}>Recommendations</div>
             <h2 className="s-title" style={{marginBottom:40}}>How to improve your rating</h2>
           </Reveal>
-
           {recs.filter(x=>x.e==="low").length>0&&(
             <Reveal delay={0.06}>
               <div className="mono" style={{color:"var(--muted)",marginBottom:14}}>Quick wins</div>
               <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:40}}>
                 {recs.filter(x=>x.e==="low").map((rc,i)=>(
                   <div key={i} className="rec-card">
-                    <div className="icon-box" style={{background:"rgba(27,138,58,0.06)",border:"1px solid rgba(27,138,58,0.12)"}}>
-                      <RecIcon type={rc.icon} color="#1B8A3A"/>
-                    </div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:15,fontWeight:400,marginBottom:3}}>{rc.t}</div>
-                      <div style={{fontSize:13,color:"var(--muted)",fontWeight:300}}>{rc.d}</div>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-                      <span style={{fontFamily:"var(--f-mono)",fontSize:12,color:"var(--fg)",letterSpacing:"0.02em"}}>{rc.s}</span>
-                      <span className="effort-tag effort-low">{rc.e}</span>
-                    </div>
+                    <div className="icon-box" style={{background:"rgba(27,138,58,0.06)",border:"1px solid rgba(27,138,58,0.12)"}}><RecIcon type={rc.icon} color="#1B8A3A"/></div>
+                    <div style={{flex:1}}><div style={{fontSize:15,fontWeight:400,marginBottom:3}}>{rc.t}</div><div style={{fontSize:13,color:"var(--muted)",fontWeight:300}}>{rc.d}</div></div>
+                    <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}><span style={{fontFamily:"var(--f-mono)",fontSize:12,color:"var(--fg)",letterSpacing:"0.02em"}}>{rc.s}</span><span className="effort-tag effort-low">{rc.e}</span></div>
                   </div>
                 ))}
               </div>
             </Reveal>
           )}
-
           {recs.filter(x=>x.e==="high").length>0&&(
             <Reveal delay={0.1}>
               <div className="mono" style={{color:"var(--muted)",marginBottom:14}}>Major upgrades</div>
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {recs.filter(x=>x.e==="high").map((rc,i)=>(
                   <div key={i} className="rec-card">
-                    <div className="icon-box" style={{background:"rgba(184,90,26,0.06)",border:"1px solid rgba(184,90,26,0.12)"}}>
-                      <RecIcon type={rc.icon} color="#B85A1A"/>
-                    </div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:15,fontWeight:400,marginBottom:3}}>{rc.t}</div>
-                      <div style={{fontSize:13,color:"var(--muted)",fontWeight:300}}>{rc.d}</div>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
-                      <span style={{fontFamily:"var(--f-mono)",fontSize:12,color:"#B85A1A",letterSpacing:"0.02em"}}>{rc.s}</span>
-                      <span className="effort-tag effort-high">{rc.e}</span>
-                    </div>
+                    <div className="icon-box" style={{background:"rgba(184,90,26,0.06)",border:"1px solid rgba(184,90,26,0.12)"}}><RecIcon type={rc.icon} color="#B85A1A"/></div>
+                    <div style={{flex:1}}><div style={{fontSize:15,fontWeight:400,marginBottom:3}}>{rc.t}</div><div style={{fontSize:13,color:"var(--muted)",fontWeight:300}}>{rc.d}</div></div>
+                    <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}><span style={{fontFamily:"var(--f-mono)",fontSize:12,color:"#B85A1A",letterSpacing:"0.02em"}}>{rc.s}</span><span className="effort-tag effort-high">{rc.e}</span></div>
                   </div>
                 ))}
               </div>
@@ -282,20 +282,35 @@ export default function EpcPage(){
         </div>
       </div>
 
-      {/* ═══ GOV.UK — Light bg ═══ */}
-      <div className="section" style={{background:"var(--bg-light)"}}>
+      {/* ═══ GOV.UK — #E7E5DF bg ═══ */}
+      <div className="section" style={{background:"var(--bg)"}}>
         <div className="section-inner">
           <Reveal>
             <div style={{display:"flex",gap:"clamp(24px,4vw,40px)",alignItems:"flex-start",maxWidth:700}}>
-              <div className="icon-box" style={{background:"rgba(27,138,58,0.08)",border:"1px solid rgba(27,138,58,0.15)",width:52,height:52,borderRadius:14,flexShrink:0}}>
-                <Shield size={22} style={{color:"#1B8A3A"}}/>
-              </div>
+              <div className="icon-box" style={{background:"rgba(27,138,58,0.08)",border:"1px solid rgba(27,138,58,0.15)",width:52,height:52,borderRadius:14,flexShrink:0}}><Shield size={22} style={{color:"#1B8A3A"}}/></div>
               <div>
                 <h3 style={{fontFamily:"var(--f-display)",fontSize:20,fontWeight:400,letterSpacing:"-0.01em",marginBottom:10}}>Official EPC register</h3>
                 <p style={{fontSize:14,color:"var(--muted)",fontWeight:300,lineHeight:1.8,marginBottom:16}}>Your certificate will typically be available on the GOV.UK EPC register within 24 hours of lodgement. Once lodged, it remains valid for 10 years and can be viewed by anyone using your postcode or address.</p>
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 20px",background:"var(--bg-white)",border:"1px solid var(--border)",borderRadius:8,color:"var(--fg)",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:500,letterSpacing:"0.06em",textTransform:"uppercase",textDecoration:"none",transition:"all 0.25s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#C0BEB8";e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.06)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="none"}}>
-                  <Shield size={12}/> View on GOV.UK <ExternalLink size={10}/>
-                </a>
+                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 20px",background:"var(--bg-white)",border:"1px solid var(--border)",borderRadius:8,color:"var(--fg)",fontFamily:"var(--f-mono)",fontSize:10,fontWeight:500,letterSpacing:"0.06em",textTransform:"uppercase",textDecoration:"none",transition:"all 0.25s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#C0BEB8";e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.06)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="none"}}><Shield size={12}/> View on GOV.UK <ExternalLink size={10}/></a>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+
+      {/* ═══ REVIEW REQUEST — White bg ═══ */}
+      <div className="section" style={{background:"var(--bg-white)",borderTop:"1px solid var(--border)",borderBottom:"1px solid var(--border)"}}>
+        <div className="section-inner" style={{maxWidth:640}}>
+          <Reveal>
+            <div className="review-card">
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,marginBottom:16}}>
+                {[1,2,3,4,5].map(i=><Star key={i} size={20} fill="#E4D048" color="#E4D048"/>)}
+              </div>
+              <h3 style={{fontFamily:"var(--f-display)",fontSize:"clamp(20px,3vw,26px)",fontWeight:400,letterSpacing:"-0.02em",marginBottom:10}}>How was your experience?</h3>
+              <p style={{fontSize:14,color:"var(--muted)",fontWeight:300,lineHeight:1.7,maxWidth:420,margin:"0 auto 24px"}}>We'd love to hear your feedback. A quick review helps us improve and helps other homeowners find a trusted assessor.</p>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
+                <a href="https://g.page/r/orvello/review" target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"12px 24px",background:"var(--accent)",color:"var(--bg-dark)",borderRadius:8,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:11,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all 0.3s"}} onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.06)";e.currentTarget.style.transform="translateY(-1px)"}} onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)";e.currentTarget.style.transform="translateY(0)"}}><Star size={13}/> Leave a Google review</a>
+                <a href="mailto:hello@orvello.co.uk?subject=Feedback" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"12px 24px",background:"transparent",color:"var(--fg)",border:"1px solid var(--border)",borderRadius:8,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:11,fontWeight:400,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all 0.3s"}} onMouseEnter={e=>e.currentTarget.style.borderColor="#C0BEB8"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}><MessageSquare size={13}/> Send feedback</a>
               </div>
             </div>
           </Reveal>
@@ -311,17 +326,14 @@ export default function EpcPage(){
               <p style={{fontSize:14,color:"rgba(240,238,232,0.4)",fontWeight:300,lineHeight:1.7,maxWidth:440}}>We offer PAS2035 retrofit assessments and can advise on the most cost-effective improvements for your property.</p>
             </Reveal>
             <Reveal delay={0.08}>
-              <div>
-                <a href="mailto:hello@orvello.co.uk" style={{display:"inline-flex",alignItems:"center",gap:10,padding:"16px 32px",background:"var(--accent)",color:"var(--bg-dark)",borderRadius:10,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:12,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all 0.3s cubic-bezier(.22,1,.36,1)"}} onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.08)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 12px 32px rgba(228,208,72,0.2)"}} onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none"}}>Get a retrofit quote <ArrowRight size={14}/></a>
-                <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:6,marginTop:14,color:"rgba(240,238,232,0.35)",fontFamily:"var(--f-mono)",fontSize:11,letterSpacing:"0.03em",textDecoration:"none",transition:"color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.color="rgba(240,238,232,0.6)"} onMouseLeave={e=>e.currentTarget.style.color="rgba(240,238,232,0.35)"}>View on GOV.UK EPC register <ExternalLink size={10}/></a>
-              </div>
+              <a href="mailto:hello@orvello.co.uk" style={{display:"inline-flex",alignItems:"center",gap:10,padding:"16px 32px",background:"var(--accent)",color:"var(--bg-dark)",borderRadius:10,textDecoration:"none",fontFamily:"var(--f-mono)",fontSize:12,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all 0.3s cubic-bezier(.22,1,.36,1)"}} onMouseEnter={e=>{e.currentTarget.style.filter="brightness(1.08)";e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 12px 32px rgba(228,208,72,0.2)"}} onMouseLeave={e=>{e.currentTarget.style.filter="brightness(1)";e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none"}}>Get a retrofit quote <ArrowRight size={14}/></a>
             </Reveal>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div style={{padding:"28px var(--px)",borderTop:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,background:"var(--bg-light)"}}>
+      <div style={{padding:"28px var(--px)",borderTop:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,background:"var(--bg)"}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <Link to="/" style={{display:"flex",alignItems:"baseline",textDecoration:"none",gap:2,opacity:0.4,transition:"opacity 0.2s"}} onMouseEnter={e=>e.currentTarget.style.opacity=0.6} onMouseLeave={e=>e.currentTarget.style.opacity=0.4}>
             <span style={{fontFamily:"var(--f-display)",fontSize:15,fontWeight:400,color:"var(--fg)"}}>Orvello</span>
@@ -329,11 +341,7 @@ export default function EpcPage(){
           </Link>
           <span style={{fontSize:12,color:"var(--muted)",fontWeight:300,opacity:0.5}}>· Construction Consultancy</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:14}}>
-          <a href="mailto:hello@orvello.co.uk" style={{fontSize:12,color:"var(--muted)",textDecoration:"none",fontWeight:300,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color="var(--fg)"} onMouseLeave={e=>e.target.style.color="var(--muted)"}>hello@orvello.co.uk</a>
-          <span style={{color:"var(--border)"}}>·</span>
-          <a href="https://orvello.co.uk" style={{fontSize:12,color:"var(--muted)",textDecoration:"none",fontWeight:300,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color="var(--fg)"} onMouseLeave={e=>e.target.style.color="var(--muted)"}>orvello.co.uk</a>
-        </div>
+        <a href="mailto:hello@orvello.co.uk" style={{fontSize:12,color:"var(--muted)",textDecoration:"none",fontWeight:300,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color="var(--fg)"} onMouseLeave={e=>e.target.style.color="var(--muted)"}>hello@orvello.co.uk</a>
       </div>
     </div>
   );
