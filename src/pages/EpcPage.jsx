@@ -1,137 +1,83 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { ExternalLink, TrendingUp, Flame, Thermometer, Zap, Home, ChevronRight, ArrowUpRight, Info, Lightbulb, Shield } from "lucide-react";
+import { ExternalLink, TrendingUp, Flame, Thermometer, Zap, Home, ChevronRight, ArrowUpRight, Lightbulb, Shield, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-/* ─── RATING ENGINE ─── */
-const RATINGS = {
-  A: { color: "#1B8A3A", bg: "rgba(27,138,58,0.08)", border: "rgba(27,138,58,0.18)", score: "92–100", band: 1, label: "Exceptional", percentile: "Top 2% of UK homes", costMultiplier: 0.45 },
-  B: { color: "#3B9B2F", bg: "rgba(59,155,47,0.08)", border: "rgba(59,155,47,0.18)", score: "81–91", band: 2, label: "Very efficient", percentile: "Top 15% of UK homes", costMultiplier: 0.6 },
-  C: { color: "#8BC34A", bg: "rgba(139,195,74,0.08)", border: "rgba(139,195,74,0.18)", score: "69–80", band: 3, label: "Above average", percentile: "Top 40% of UK homes", costMultiplier: 0.75 },
-  D: { color: "#F5C518", bg: "rgba(245,197,24,0.08)", border: "rgba(245,197,24,0.18)", score: "55–68", band: 4, label: "Average", percentile: "Around the UK average", costMultiplier: 1.0 },
-  E: { color: "#F39C12", bg: "rgba(243,156,18,0.08)", border: "rgba(243,156,18,0.18)", score: "39–54", band: 5, label: "Below average", percentile: "Bottom 35% of UK homes", costMultiplier: 1.3 },
-  F: { color: "#E67E22", bg: "rgba(230,126,34,0.08)", border: "rgba(230,126,34,0.18)", score: "21–38", band: 6, label: "Poor", percentile: "Bottom 15% of UK homes", costMultiplier: 1.65 },
-  G: { color: "#C0392B", bg: "rgba(192,57,43,0.08)", border: "rgba(192,57,43,0.18)", score: "1–20", band: 7, label: "Very poor", percentile: "Bottom 5% of UK homes", costMultiplier: 2.1 },
+/* ═══ DATA ENGINE ═══ */
+const R = {
+  A:{c:"#0F7B3F",bg:"#E8F5EC",bdr:"#B8E0C4",score:"92–100",label:"Exceptional",pos:"the top 2%",ctx:"among the most efficient homes in the country",mult:0.45},
+  B:{c:"#2D8E3B",bg:"#EAF6EB",bdr:"#BDE4C5",score:"81–91",label:"Very efficient",pos:"the top 15%",ctx:"well above the national average",mult:0.6},
+  C:{c:"#5A9E2E",bg:"#F0F6E6",bdr:"#D4E8B8",score:"69–80",label:"Above average",pos:"the top 40%",ctx:"better than most UK homes",mult:0.75},
+  D:{c:"#C49A1A",bg:"#FDF6E3",bdr:"#F0DFA0",score:"55–68",label:"Average",pos:"the median",ctx:"typical for UK housing stock",mult:1.0},
+  E:{c:"#C47A18",bg:"#FEF0E0",bdr:"#F0CFA0",score:"39–54",label:"Below average",pos:"the bottom 35%",ctx:"less efficient than most homes",mult:1.3},
+  F:{c:"#B85A1A",bg:"#FDECE0",bdr:"#F0B8A0",score:"21–38",label:"Poor",pos:"the bottom 15%",ctx:"significantly below the national standard",mult:1.65},
+  G:{c:"#A83030",bg:"#FDE8E8",bdr:"#F0A8A8",score:"1–20",label:"Very poor",pos:"the bottom 5%",ctx:"among the least efficient homes in the UK",mult:2.1},
 };
+const HEAT={gas:{l:"Gas central heating",base:1200},electric:{l:"Electric heating",base:1800},oil:{l:"Oil boiler",base:1400},lpg:{l:"LPG boiler",base:1500},heatpump:{l:"Heat pump",base:750},other:{l:"Other",base:1300}};
+const INS={good:{l:"Good",f:0.9},average:{l:"Average",f:1.0},poor:{l:"Poor",f:1.25}};
 
-const HEATING_DATA = {
-  gas: { label: "Gas boiler", baseCost: 1200 },
-  electric: { label: "Electric heating", baseCost: 1800 },
-  oil: { label: "Oil boiler", baseCost: 1400 },
-  lpg: { label: "LPG boiler", baseCost: 1500 },
-  heatpump: { label: "Heat pump", baseCost: 750 },
-  other: { label: "Other", baseCost: 1300 },
-};
+function engine(rating,heating,insulation){
+  const r=R[rating],h=HEAT[heating]||HEAT.gas,ins=INS[insulation]||INS.average;
+  const annual=Math.round(h.base*r.mult*ins.f),monthly=Math.round(annual/12);
+  const bands="ABCDEFG",ci=bands.indexOf(rating),pi=Math.max(0,ci-2),pr=bands[pi],prData=R[pr];
+  const potAnnual=Math.round(h.base*prData.mult*0.9),savings=annual-potAnnual;
 
-const INSULATION_DATA = {
-  good: { label: "Good", impact: "low", factor: 0.9, desc: "Well insulated throughout" },
-  average: { label: "Average", impact: "moderate", factor: 1.0, desc: "Some areas could be improved" },
-  poor: { label: "Poor", impact: "significant", factor: 1.25, desc: "Major heat loss likely" },
-};
-
-function getInsights(rating, heating, insulation) {
-  const r = RATINGS[rating];
-  const h = HEATING_DATA[heating] || HEATING_DATA.gas;
-  const ins = INSULATION_DATA[insulation] || INSULATION_DATA.average;
-  const annualCost = Math.round(h.baseCost * r.costMultiplier * ins.factor);
-  const monthlyCost = Math.round(annualCost / 12);
-
-  // Potential rating (1-2 bands better, capped at A)
-  const bands = "ABCDEFG";
-  const currentIdx = bands.indexOf(rating);
-  const potentialIdx = Math.max(0, currentIdx - 2);
-  const potentialRating = bands[potentialIdx];
-  const potentialR = RATINGS[potentialRating];
-  const potentialAnnual = Math.round(h.baseCost * potentialR.costMultiplier * 0.9);
-  const savingsAnnual = annualCost - potentialAnnual;
-
-  // Limiting factors
-  const limiters = [];
-  if (ins.factor > 1) limiters.push({ icon: "thermo", text: "Insulation is a key limiting factor", detail: ins.desc });
-  if (heating === "electric") limiters.push({ icon: "zap", text: "Electric heating has higher running costs", detail: "Consider a heat pump or gas alternative" });
-  if (heating === "oil" || heating === "lpg") limiters.push({ icon: "flame", text: `${h.label} has moderate carbon output`, detail: "May affect future compliance requirements" });
-  if (currentIdx >= 4) limiters.push({ icon: "home", text: "Property is below the national average", detail: "Improvements could significantly reduce bills" });
-
-  // Suggestions
-  const quickWins = [];
-  const majorUpgrades = [];
-  if (insulation !== "good") {
-    quickWins.push("Draught-proof doors and windows");
-    quickWins.push("Top up loft insulation to 270mm");
-    majorUpgrades.push("Cavity or solid wall insulation");
+  const recs=[];
+  if(insulation!=="good"){
+    recs.push({title:"Improve insulation",desc:"Top up loft insulation to 270mm",saving:"£100–£300/yr",effort:"low"});
+    if(insulation==="poor") recs.push({title:"Wall insulation",desc:"Cavity or external wall insulation",saving:"£200–£500/yr",effort:"medium"});
   }
-  if (heating === "electric" || heating === "oil" || heating === "lpg") {
-    majorUpgrades.push("Upgrade to a heat pump or modern gas boiler");
-  }
-  if (currentIdx >= 2) {
-    quickWins.push("Install LED lighting throughout");
-    quickWins.push("Upgrade hot water cylinder insulation");
-  }
-  if (currentIdx >= 3) {
-    majorUpgrades.push("Install double or triple glazing");
-    majorUpgrades.push("Add solar PV panels");
-  }
-  if (quickWins.length === 0) quickWins.push("Property already performs well — maintain current systems");
-  if (majorUpgrades.length === 0) majorUpgrades.push("No major upgrades needed at this time");
+  if(ci>=2) recs.push({title:"LED lighting",desc:"Replace all remaining halogen and CFL bulbs",saving:"£40–£80/yr",effort:"low"});
+  if(ci>=3) recs.push({title:"Glazing upgrade",desc:"Install double or triple glazing where single-glazed",saving:"£100–£300/yr",effort:"high"});
+  if(heating==="electric"||heating==="oil"||heating==="lpg") recs.push({title:"Heating system upgrade",desc:"Consider a heat pump or modern condensing boiler",saving:"£300–£800/yr",effort:"high"});
+  if(ci>=2) recs.push({title:"Smart heating controls",desc:"Install a smart thermostat and TRVs",saving:"£60–£150/yr",effort:"low"});
+  if(ci>=4) recs.push({title:"Solar PV panels",desc:"Generate your own electricity and reduce bills",saving:"£200–£500/yr",effort:"high"});
+  if(recs.length===0) recs.push({title:"Well optimised",desc:"Your property already performs well — maintain current systems",saving:"—",effort:"—"});
 
-  return { r, h, ins, annualCost, monthlyCost, potentialRating, potentialR, savingsAnnual, limiters, quickWins, majorUpgrades };
+  return{r,h,ins,annual,monthly,pr,prData,savings,recs};
 }
 
-function parseParams() {
-  const p = new URLSearchParams(window.location.search);
-  const rating = (p.get("rating") || "").toUpperCase();
-  if (!RATINGS[rating]) return null;
-  return {
-    rating,
-    heating: p.get("heating") || "gas",
-    insulation: p.get("insulation") || "average",
-    ref: p.get("ref") || null,
-    addr: p.get("addr") || null,
-  };
+function parseParams(){
+  const p=new URLSearchParams(window.location.search);
+  const rating=(p.get("rating")||"").toUpperCase();
+  if(!R[rating]) return null;
+  return{rating,heating:p.get("heating")||"gas",insulation:p.get("insulation")||"average",ref:p.get("ref")||"",addr:p.get("addr")||""};
 }
 
-function GrainOverlay() {
-  const ref = useRef(null);
-  useEffect(() => {
-    const c = ref.current; if (!c) return;
-    c.width = 512; c.height = 512;
-    const ctx = c.getContext("2d");
-    const img = ctx.createImageData(512, 512);
-    for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255; img.data[i] = v; img.data[i+1] = v; img.data[i+2] = v; img.data[i+3] = 14; }
-    ctx.putImageData(img, 0, 0);
-  }, []);
-  return <canvas ref={ref} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", opacity: 0.5, mixBlendMode: "overlay", zIndex: 1 }} />;
+/* ═══ COMPONENTS ═══ */
+function useInView(threshold=0.15){
+  const ref=useRef(null);const[v,setV]=useState(false);
+  useEffect(()=>{const el=ref.current;if(!el)return;const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){setV(true);o.unobserve(el)}},{threshold});o.observe(el);return()=>o.disconnect()},[threshold]);
+  return[ref,v];
+}
+function Reveal({children,delay=0,style={}}){
+  const[ref,v]=useInView();
+  return <div ref={ref} style={{...style,opacity:v?1:0,transform:v?"translateY(0)":"translateY(24px)",transition:`opacity 0.8s cubic-bezier(.22,1,.36,1) ${delay}s, transform 0.8s cubic-bezier(.22,1,.36,1) ${delay}s`}}>{children}</div>;
 }
 
-/* ─── Rating bar visualisation ─── */
-function RatingBar({ current }) {
-  const bands = "ABCDEFG";
-  const colors = ["#1B8A3A","#3B9B2F","#8BC34A","#F5C518","#F39C12","#E67E22","#C0392B"];
-  const widths = [35, 45, 55, 65, 75, 85, 95]; // % widths for the stepped bars
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4, margin: "24px 0" }}>
-      {bands.split("").map((b, i) => {
-        const active = b === current;
-        return (
-          <div key={b} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+function RatingScale({current}){
+  const bands="ABCDEFG".split("");
+  const colors=["#0F7B3F","#2D8E3B","#5A9E2E","#C49A1A","#C47A18","#B85A1A","#A83030"];
+  const widths=[30,38,46,54,62,70,80];
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:5}}>
+      {bands.map((b,i)=>{
+        const active=b===current;
+        return(
+          <div key={b} style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{
-              width: `${widths[i]}%`, height: active ? 32 : 24,
-              background: active ? colors[i] : `${colors[i]}20`,
-              borderRadius: 4, display: "flex", alignItems: "center",
-              paddingLeft: 12, transition: "all 0.4s cubic-bezier(.22,1,.36,1)",
-              border: active ? `2px solid ${colors[i]}` : "2px solid transparent",
+              width:`${widths[i]}%`,height:active?36:28,
+              background:active?colors[i]:`${colors[i]}18`,
+              borderRadius:active?"6px":"4px",
+              display:"flex",alignItems:"center",justifyContent:"space-between",
+              padding:"0 14px",
+              transition:"all 0.5s cubic-bezier(.22,1,.36,1)",
+              border:active?`2px solid ${colors[i]}`:"2px solid transparent",
+              boxShadow:active?`0 4px 16px ${colors[i]}25`:"none",
             }}>
-              <span style={{
-                fontFamily: "var(--font-mono)", fontSize: active ? 13 : 11,
-                fontWeight: active ? 600 : 400,
-                color: active ? "white" : colors[i],
-                letterSpacing: "0.04em",
-              }}>{b}</span>
+              <span style={{fontFamily:"var(--f-mono)",fontSize:active?14:12,fontWeight:active?600:400,color:active?"white":colors[i],letterSpacing:"0.03em"}}>{b}</span>
+              <span style={{fontFamily:"var(--f-mono)",fontSize:active?11:10,fontWeight:400,color:active?"rgba(255,255,255,0.75)":`${colors[i]}80`,letterSpacing:"0.02em"}}>{R[b].score}</span>
             </div>
-            {active && (
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: colors[i], fontWeight: 500, whiteSpace: "nowrap" }}>
-                {RATINGS[b].score} pts
-              </span>
-            )}
+            {active&&<span style={{fontFamily:"var(--f-mono)",fontSize:11,color:colors[i],fontWeight:500,whiteSpace:"nowrap",letterSpacing:"0.03em"}}>← Your property</span>}
           </div>
         );
       })}
@@ -140,241 +86,250 @@ function RatingBar({ current }) {
 }
 
 /* ═══ MAIN ═══ */
-export default function EpcPage() {
-  const params = useMemo(() => parseParams(), []);
-  const data = useMemo(() => params ? getInsights(params.rating, params.heating, params.insulation) : null, [params]);
+export default function EpcPage(){
+  const params=useMemo(()=>parseParams(),[]);
+  const data=useMemo(()=>params?engine(params.rating,params.heating,params.insulation):null,[params]);
 
-  if (!params) {
-    return (
-      <div className="epc-root">
-        <style>{STYLES}</style>
-        <div className="epc-container" style={{ textAlign: "center", padding: "120px 24px" }}>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 400, color: "var(--fg)", marginBottom: 12 }}>EPC not found</h1>
-          <p style={{ fontSize: 14, color: "var(--muted)", fontWeight: 300 }}>This link is missing or invalid. Please contact us if you need assistance.</p>
-          <a href="mailto:hello@orvello.co.uk" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 24, padding: "12px 24px", background: "var(--accent)", color: "var(--bg)", borderRadius: 8, textDecoration: "none", fontFamily: "var(--font-mono)", fontSize: 11, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>Contact us</a>
-        </div>
+  if(!params) return(
+    <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",background:"#F7F6F3",minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{textAlign:"center",maxWidth:400}}>
+        <h1 style={{fontSize:24,fontWeight:400,color:"#1A1A18",marginBottom:12}}>EPC not found</h1>
+        <p style={{fontSize:14,color:"#8A8A80",fontWeight:300,marginBottom:24}}>This link is missing or invalid. Please contact us.</p>
+        <a href="mailto:hello@orvello.co.uk" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"12px 24px",background:"#E4D048",color:"#272420",borderRadius:8,textDecoration:"none",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase"}}>Contact us</a>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const { r, h, ins, annualCost, monthlyCost, potentialRating, potentialR, savingsAnnual, limiters, quickWins, majorUpgrades } = data;
+  const{r,h,ins,annual,monthly,pr,prData,savings,recs}=data;
+  const addr=params.addr||"Property address not specified";
 
-  return (
-    <div className="epc-root">
-      <style>{STYLES}</style>
-      <GrainOverlay />
+  return(
+    <div className="epc">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,300;12..96,400;12..96,500;12..96,600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+        :root{--bg:#F7F6F3;--fg:#1A1A18;--muted:#8A8A80;--accent:#E4D048;--border:#E8E6E0;--dark:#272420;--f-display:'Bricolage Grotesque',sans-serif;--f-body:'Bricolage Grotesque',sans-serif;--f-mono:'IBM Plex Mono',monospace;--max-w:800px;--px:clamp(20px,5vw,48px)}
+        .epc{font-family:var(--f-body);background:var(--bg);color:var(--fg);min-height:100vh}
 
-      {/* Nav */}
+        /* Nav */
+        .epc-nav{position:sticky;top:0;z-index:50;background:rgba(247,246,243,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 var(--px);height:52px;display:flex;align-items:center;justify-content:space-between}
+        .mono{font-family:var(--f-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;font-weight:400}
+
+        /* Sections */
+        .s{padding:clamp(48px,8vw,96px) var(--px);max-width:var(--max-w);margin:0 auto}
+        .s-border{border-top:1px solid var(--border)}
+        .s-tag{font-family:var(--f-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;font-weight:400}
+        .s-title{font-family:var(--f-display);font-size:clamp(26px,4vw,38px);font-weight:300;letter-spacing:-0.025em;line-height:1.15;margin-bottom:24px}
+
+        /* CTA band */
+        .cta-band{background:var(--dark);color:#F0EEE8;padding:clamp(48px,6vw,72px) var(--px)}
+        .cta-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap}
+        .cta-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;background:white;color:var(--dark);border-radius:10px;text-decoration:none;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.3s cubic-bezier(.22,1,.36,1);white-space:nowrap}
+        .cta-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.2)}
+        .gov-link{display:inline-flex;align-items:center;gap:6px;color:rgba(240,238,232,0.45);font-family:var(--f-mono);font-size:11px;letter-spacing:0.03em;text-decoration:none;transition:color 0.2s;margin-top:12px}
+        .gov-link:hover{color:rgba(240,238,232,0.7)}
+
+        /* Footer */
+        .epc-footer{padding:28px var(--px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+        /* Rec cards */
+        .rec-card{padding:20px 24px;background:white;border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;transition:all 0.3s;cursor:default}
+        .rec-card:hover{border-color:#D0CEC8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.04)}
+
+        .effort-tag{font-family:var(--f-mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:4px;font-weight:500;white-space:nowrap}
+        .effort-low{background:rgba(90,158,46,0.08);color:#5A9E2E;border:1px solid rgba(90,158,46,0.15)}
+        .effort-medium{background:rgba(196,154,26,0.08);color:#C49A1A;border:1px solid rgba(196,154,26,0.15)}
+        .effort-high{background:rgba(184,90,26,0.08);color:#B85A1A;border:1px solid rgba(184,90,26,0.15)}
+
+        @media(max-width:700px){
+          .cta-inner{flex-direction:column;align-items:flex-start}
+          .hero-grid{grid-template-columns:1fr!important}
+          .cost-row{flex-direction:column!important}
+        }
+      `}</style>
+
+      {/* ─── NAV ─── */}
       <nav className="epc-nav">
-        <Link to="/" style={{ display: "flex", alignItems: "baseline", textDecoration: "none", gap: 3 }}>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 400, color: "var(--fg-light)" }}>Orvello</span>
-          <span style={{ width: 3, height: 3, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
+        <Link to="/" style={{display:"flex",alignItems:"baseline",textDecoration:"none",gap:3}}>
+          <span style={{fontFamily:"var(--f-display)",fontSize:17,fontWeight:400,color:"var(--fg)"}}>Orvello</span>
+          <span style={{width:3,height:3,background:"var(--accent)",display:"inline-block",borderRadius:1}}/>
         </Link>
-        <span className="mono" style={{ color: "var(--fg-dimmer)" }}>EPC Report</span>
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
+          {params.ref&&<span className="mono" style={{color:"var(--muted)"}}>Ref: {params.ref}</span>}
+          <a href="https://orvello.co.uk" target="_blank" rel="noopener noreferrer" style={{fontFamily:"var(--f-mono)",fontSize:10,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--fg)",textDecoration:"none",padding:"6px 14px",border:"1px solid var(--border)",borderRadius:6,transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor="#C0BEB8"} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border)"}>Orvello.co.uk</a>
+        </div>
       </nav>
 
-      <div className="epc-container">
-        {/* ═══ HERO CARD ═══ */}
-        <div className="epc-card hero-card">
-          <div className="hero-top">
-            <div>
-              <div className="mono" style={{ color: "var(--fg-dimmer)", marginBottom: 8 }}>Energy Performance Certificate</div>
-              <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(24px,4vw,32px)", fontWeight: 400, color: "var(--fg)", letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: 6 }}>
-                Your property is rated
-              </h1>
-              {params.addr && <p style={{ fontSize: 14, color: "var(--muted)", fontWeight: 300, lineHeight: 1.5 }}>{params.addr}</p>}
-              {params.ref && <div className="mono" style={{ color: "var(--muted)", marginTop: 8, fontSize: 10 }}>Ref: {params.ref}</div>}
-            </div>
-            <div className="rating-badge" style={{ background: r.bg, borderColor: r.border, color: r.color }}>
-              <span className="rating-letter">{params.rating}</span>
-              <span className="rating-label">{r.label}</span>
-            </div>
-          </div>
+      {/* ═══ HERO ═══ */}
+      <div className="s" style={{paddingBottom:"clamp(32px,5vw,56px)"}}>
+        <Reveal>
+          <div className="s-tag">Energy Performance Certificate</div>
+          <h1 style={{fontFamily:"var(--f-display)",fontSize:"clamp(30px,5vw,48px)",fontWeight:300,letterSpacing:"-0.03em",lineHeight:1.1,marginBottom:8,color:"var(--fg)"}}>{addr}</h1>
+          <p style={{fontSize:14,color:"var(--muted)",fontWeight:300}}>Assessment by Orvello{params.ref?` · Ref: ${params.ref}`:""}</p>
+        </Reveal>
+      </div>
 
-          <RatingBar current={params.rating} />
-
-          <div className="stat-row">
-            <div className="stat-pill" style={{ background: r.bg, border: `1px solid ${r.border}`, color: r.color }}>
-              <TrendingUp size={14} /> {r.percentile}
-            </div>
-          </div>
-        </div>
-
-        {/* ═══ COSTS ═══ */}
-        <div className="epc-card">
-          <div className="card-header">
-            <Flame size={16} style={{ color: "var(--accent)" }} />
-            <span>Estimated energy costs</span>
-          </div>
-          <div className="cost-grid">
-            <div className="cost-box">
-              <div className="cost-value">£{monthlyCost}</div>
-              <div className="mono" style={{ color: "var(--muted)", fontSize: 9 }}>Per month</div>
-            </div>
-            <div className="cost-box">
-              <div className="cost-value">£{annualCost.toLocaleString()}</div>
-              <div className="mono" style={{ color: "var(--muted)", fontSize: 9 }}>Per year</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 16 }}>
-            <div className="detail-tag"><Flame size={11} /> {h.label}</div>
-            <div className="detail-tag"><Thermometer size={11} /> Insulation: {ins.label.toLowerCase()}</div>
-          </div>
-          <p className="card-footnote">Based on typical usage for a property of this type and rating. Actual costs depend on tariff, usage, and property size.</p>
-        </div>
-
-        {/* ═══ LIMITING FACTORS ═══ */}
-        {limiters.length > 0 && (
-          <div className="epc-card">
-            <div className="card-header">
-              <Info size={16} style={{ color: "var(--accent)" }} />
-              <span>Key factors affecting your rating</span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {limiters.map((l, i) => (
-                <div key={i} className="limiter-row">
-                  <div className="limiter-icon">
-                    {l.icon === "thermo" && <Thermometer size={14} />}
-                    {l.icon === "zap" && <Zap size={14} />}
-                    {l.icon === "flame" && <Flame size={14} />}
-                    {l.icon === "home" && <Home size={14} />}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 400, color: "var(--fg)", marginBottom: 2 }}>{l.text}</div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 300 }}>{l.detail}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ═══ POTENTIAL ═══ */}
-        {potentialRating !== params.rating && (
-          <div className="epc-card" style={{ border: `1px solid ${potentialR.border}` }}>
-            <div className="card-header">
-              <TrendingUp size={16} style={{ color: potentialR.color }} />
-              <span>Potential improvement</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-              <div className="mini-badge" style={{ background: r.bg, color: r.color, borderColor: r.border }}>{params.rating}</div>
-              <ChevronRight size={16} style={{ color: "var(--muted)" }} />
-              <div className="mini-badge" style={{ background: potentialR.bg, color: potentialR.color, borderColor: potentialR.border }}>{potentialRating}</div>
-              <div style={{ fontSize: 13, color: "var(--muted)", fontWeight: 300 }}>
-                Save up to <strong style={{ color: "var(--fg)", fontWeight: 500 }}>£{savingsAnnual.toLocaleString()}/yr</strong>
+      {/* ═══ RATING + SUMMARY ═══ */}
+      <div className="s s-border" style={{paddingTop:"clamp(48px,6vw,72px)"}}>
+        <div className="hero-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"clamp(40px,6vw,80px)",alignItems:"start"}}>
+          {/* Left: Rating badge + scale */}
+          <Reveal>
+            <div style={{display:"flex",alignItems:"center",gap:20,marginBottom:32}}>
+              <div style={{width:88,height:88,borderRadius:18,background:r.bg,border:`2px solid ${r.bdr}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <span style={{fontFamily:"var(--f-display)",fontSize:42,fontWeight:500,color:r.c,lineHeight:1}}>{params.rating}</span>
+              </div>
+              <div>
+                <div style={{fontSize:22,fontWeight:400,color:r.c,fontFamily:"var(--f-display)",letterSpacing:"-0.01em"}}>{r.label}</div>
+                <div style={{fontSize:13,color:"var(--muted)",fontWeight:300,marginTop:2}}>Median of UK homes</div>
               </div>
             </div>
+            <RatingScale current={params.rating}/>
+          </Reveal>
 
-            <div style={{ marginBottom: 16 }}>
-              <div className="mono" style={{ color: "var(--muted)", marginBottom: 10, fontSize: 10 }}>Quick wins</div>
-              {quickWins.map((s, i) => (
-                <div key={i} className="suggestion-row">
-                  <Lightbulb size={12} style={{ color: "var(--accent)", flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ fontSize: 13, color: "var(--fg)", fontWeight: 300 }}>{s}</span>
+          {/* Right: Key stats */}
+          <Reveal delay={0.1}>
+            <div style={{display:"flex",flexDirection:"column",gap:16}}>
+              {/* Annual cost */}
+              <div style={{background:"white",border:"1px solid var(--border)",borderRadius:12,padding:"24px 28px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <Flame size={14} style={{color:"var(--muted)"}}/>
+                  <span className="mono" style={{color:"var(--muted)"}}>Est. annual cost</span>
                 </div>
-              ))}
-            </div>
-            <div>
-              <div className="mono" style={{ color: "var(--muted)", marginBottom: 10, fontSize: 10 }}>Major upgrades</div>
-              {majorUpgrades.map((s, i) => (
-                <div key={i} className="suggestion-row">
-                  <ArrowUpRight size={12} style={{ color: potentialR.color, flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ fontSize: 13, color: "var(--fg)", fontWeight: 300 }}>{s}</span>
+                <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(32px,4vw,42px)",fontWeight:300,color:"var(--fg)",letterSpacing:"-0.02em"}}>£{annual.toLocaleString()}</div>
+                <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:4}}>Based on current energy prices</div>
+              </div>
+              {/* Monthly */}
+              <div style={{background:"white",border:"1px solid var(--border)",borderRadius:12,padding:"24px 28px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <Zap size={14} style={{color:"var(--muted)"}}/>
+                  <span className="mono" style={{color:"var(--muted)"}}>Est. monthly cost</span>
                 </div>
-              ))}
+                <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(32px,4vw,42px)",fontWeight:300,color:"var(--fg)",letterSpacing:"-0.02em"}}>£{monthly}</div>
+                <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:4}}>Approximate monthly average</div>
+              </div>
+              {/* Heating + Insulation */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <div style={{background:"white",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><Thermometer size={12} style={{color:"var(--muted)"}}/><span className="mono" style={{color:"var(--muted)"}}>Heating</span></div>
+                  <div style={{fontSize:15,fontWeight:400,color:"var(--fg)",lineHeight:1.3}}>{h.l}</div>
+                </div>
+                <div style={{background:"white",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}><Home size={12} style={{color:"var(--muted)"}}/><span className="mono" style={{color:"var(--muted)"}}>Insulation</span></div>
+                  <div style={{fontSize:15,fontWeight:400,color:"var(--fg)",lineHeight:1.3}}>{ins.l} insulation</div>
+                </div>
+              </div>
+              {/* Potential */}
+              {pr!==params.rating&&(
+                <div style={{background:prData.bg,border:`1px solid ${prData.bdr}`,borderRadius:12,padding:"20px 24px",display:"flex",alignItems:"center",gap:14}}>
+                  <TrendingUp size={18} style={{color:prData.c,flexShrink:0}}/>
+                  <div>
+                    <span style={{fontSize:14,fontWeight:400,color:"var(--fg)"}}>Potential rating: <strong style={{color:prData.c}}>{pr}</strong></span>
+                    <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:2}}>Could save up to £{savings}/year with improvements</div>
+                  </div>
+                </div>
+              )}
             </div>
+          </Reveal>
+        </div>
+      </div>
+
+      {/* ═══ CONTEXT — What this means ═══ */}
+      <div className="s s-border">
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1.4fr",gap:"clamp(40px,6vw,80px)",alignItems:"start"}} className="hero-grid">
+          <Reveal>
+            <div className="s-tag">What this means</div>
+            <h2 className="s-title">Your property in context</h2>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <div style={{fontSize:16,lineHeight:1.85,color:"var(--muted)",fontWeight:300}}>
+              <p style={{marginBottom:20}}>Your property has been assessed with an EPC rating of <strong style={{color:r.c,fontWeight:500}}>{params.rating}</strong>, placing it in <strong style={{color:"var(--fg)",fontWeight:500}}>{r.pos}</strong> of UK homes for energy efficiency.</p>
+              <p style={{marginBottom:20}}>Based on your {h.l.toLowerCase()} and {ins.l.toLowerCase()} insulation, estimated annual energy costs are around <strong style={{color:"var(--fg)",fontWeight:500}}>£{annual.toLocaleString()}</strong> (approximately £{monthly}/month). These figures are estimates based on typical usage and current energy tariffs.</p>
+              {pr!==params.rating&&<p>With targeted improvements, your property could achieve a rating of <strong style={{color:prData.c,fontWeight:500}}>{pr}</strong>, potentially saving up to <strong style={{color:"var(--fg)",fontWeight:500}}>£{savings} per year</strong> on energy bills.</p>}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+
+      {/* ═══ RECOMMENDATIONS ═══ */}
+      <div className="s s-border">
+        <Reveal>
+          <div className="s-tag">Recommendations</div>
+          <h2 className="s-title">How to improve your rating</h2>
+        </Reveal>
+
+        {/* Quick wins */}
+        <Reveal delay={0.06}>
+          <div className="mono" style={{color:"var(--muted)",marginBottom:14,marginTop:8}}>Quick wins</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:36}}>
+            {recs.filter(r=>r.effort==="low").map((rec,i)=>(
+              <div key={i} className="rec-card">
+                <div>
+                  <div style={{fontSize:15,fontWeight:400,color:"var(--fg)",marginBottom:4}}>{rec.title}</div>
+                  <div style={{fontSize:13,color:"var(--muted)",fontWeight:300}}>{rec.desc}</div>
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+                  <span style={{fontFamily:"var(--f-mono)",fontSize:12,color:"var(--fg)",letterSpacing:"0.02em"}}>{rec.saving}</span>
+                  <span className={`effort-tag effort-${rec.effort}`}>{rec.effort}</span>
+                </div>
+              </div>
+            ))}
           </div>
+        </Reveal>
+
+        {/* Major upgrades */}
+        {recs.filter(r=>r.effort!=="low"&&r.effort!=="—").length>0&&(
+          <Reveal delay={0.1}>
+            <div className="mono" style={{color:"var(--muted)",marginBottom:14}}>Major upgrades</div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {recs.filter(r=>r.effort!=="low"&&r.effort!=="—").map((rec,i)=>(
+                <div key={i} className="rec-card">
+                  <div>
+                    <div style={{fontSize:15,fontWeight:400,color:"var(--fg)",marginBottom:4}}>{rec.title}</div>
+                    <div style={{fontSize:13,color:"var(--muted)",fontWeight:300}}>{rec.desc}</div>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+                    <span style={{fontFamily:"var(--f-mono)",fontSize:12,color:rec.effort==="high"?"#B85A1A":"#C49A1A",letterSpacing:"0.02em"}}>{rec.saving}</span>
+                    <span className={`effort-tag effort-${rec.effort}`}>{rec.effort}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
         )}
+      </div>
 
-        {/* ═══ GOV.UK ═══ */}
-        <div className="epc-card gov-card">
-          <Shield size={16} style={{ color: "var(--accent)", flexShrink: 0 }} />
-          <div>
-            <p style={{ fontSize: 13, color: "var(--fg)", fontWeight: 400, marginBottom: 4 }}>Official EPC register</p>
-            <p style={{ fontSize: 12, color: "var(--muted)", fontWeight: 300, lineHeight: 1.6, marginBottom: 10 }}>Your certificate will typically appear on the GOV.UK register within 24 hours of lodgement.</p>
-            <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" className="gov-link">
-              View on GOV.UK <ExternalLink size={10} />
-            </a>
-          </div>
+      {/* ═══ CTA BAND ═══ */}
+      <div className="cta-band">
+        <div className="cta-inner">
+          <Reveal>
+            <h2 style={{fontFamily:"var(--f-display)",fontSize:"clamp(24px,3.5vw,34px)",fontWeight:300,letterSpacing:"-0.02em",lineHeight:1.2,marginBottom:8}}>Need help improving your rating?</h2>
+            <p style={{fontSize:14,color:"rgba(240,238,232,0.45)",fontWeight:300,lineHeight:1.7,maxWidth:440}}>We offer PAS2035 retrofit assessments and can advise on the most cost-effective improvements for your property.</p>
+          </Reveal>
+          <Reveal delay={0.08}>
+            <div>
+              <a href="mailto:hello@orvello.co.uk" className="cta-btn">Get a retrofit quote <ArrowRight size={14}/></a>
+              <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener noreferrer" className="gov-link">View on GOV.UK EPC register <ExternalLink size={10}/></a>
+            </div>
+          </Reveal>
         </div>
+      </div>
 
-        {/* ═══ CTA ═══ */}
-        <div className="epc-card cta-card">
-          <h3 style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 400, color: "var(--fg)", marginBottom: 6 }}>Want to improve your rating?</h3>
-          <p style={{ fontSize: 13, color: "var(--muted)", fontWeight: 300, lineHeight: 1.6, marginBottom: 20 }}>We offer PAS2035 retrofit assessments to help you plan and fund energy improvements. Get in touch for a free consultation.</p>
-          <a href="mailto:hello@orvello.co.uk" className="cta-btn">Speak to us <ChevronRight size={14} /></a>
-        </div>
-
-        {/* Footer */}
-        <div style={{ textAlign: "center", padding: "32px 0 16px" }}>
-          <Link to="/" style={{ display: "inline-flex", alignItems: "baseline", textDecoration: "none", gap: 3, opacity: 0.3, transition: "opacity 0.2s" }} onMouseEnter={e => e.currentTarget.style.opacity = 0.5} onMouseLeave={e => e.currentTarget.style.opacity = 0.3}>
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 400, color: "var(--fg-light)" }}>Orvello</span>
-            <span style={{ width: 3, height: 3, background: "var(--accent)", display: "inline-block", borderRadius: 1 }} />
+      {/* ─── Footer ─── */}
+      <div className="epc-footer">
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <Link to="/" style={{display:"flex",alignItems:"baseline",textDecoration:"none",gap:2}}>
+            <span style={{fontFamily:"var(--f-display)",fontSize:15,fontWeight:400,color:"var(--fg)",opacity:0.4}}>Orvello</span>
+            <span style={{width:3,height:3,background:"var(--accent)",display:"inline-block",borderRadius:1,opacity:0.4}}/>
           </Link>
+          <span style={{fontSize:12,color:"var(--muted)",fontWeight:300,opacity:0.5}}>· Construction Consultancy</span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <a href="mailto:hello@orvello.co.uk" style={{fontSize:12,color:"var(--muted)",textDecoration:"none",fontWeight:300,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color="var(--fg)"} onMouseLeave={e=>e.target.style.color="var(--muted)"}>hello@orvello.co.uk</a>
+          <span style={{color:"var(--border)"}}>·</span>
+          <a href="https://orvello.co.uk" style={{fontSize:12,color:"var(--muted)",textDecoration:"none",fontWeight:300,transition:"color 0.2s"}} onMouseEnter={e=>e.target.style.color="var(--fg)"} onMouseLeave={e=>e.target.style.color="var(--muted)"}>orvello.co.uk</a>
         </div>
       </div>
     </div>
   );
 }
-
-const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200;12..96,300;12..96,400;12..96,500;12..96,600&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
-  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-  html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
-  :root{
-    --bg:#272420;--bg-light:#F7F6F3;--bg-off:#EDECE8;--bg-card:white;
-    --fg:#1A1A18;--fg-light:#F0EEE8;--fg-dimmer:rgba(240,238,232,0.25);
-    --muted:#8A8A80;--accent:#E4D048;
-    --border:#DDDBD5;
-    --font-display:'Bricolage Grotesque',sans-serif;
-    --font-body:'Bricolage Grotesque',sans-serif;
-    --font-mono:'IBM Plex Mono',monospace;
-  }
-  .epc-root{
-    font-family:var(--font-body);background:var(--bg);
-    min-height:100vh;position:relative;overflow-x:hidden;
-  }
-  .epc-nav{
-    position:sticky;top:0;z-index:50;
-    background:rgba(39,36,32,0.92);backdrop-filter:blur(16px);
-    padding:0 24px;height:56px;display:flex;align-items:center;
-    justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);
-  }
-  .epc-container{
-    max-width:560px;margin:0 auto;padding:24px 16px 48px;
-    position:relative;z-index:2;
-  }
-  .mono{font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;font-weight:400}
-  .epc-card{
-    background:var(--bg-card);border:1px solid var(--border);
-    border-radius:14px;padding:clamp(20px,4vw,28px);margin-bottom:16px;
-  }
-  .hero-card{padding:clamp(24px,4vw,32px)}
-  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
-  .rating-badge{
-    width:80px;height:80px;border-radius:16px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    border:2px solid;flex-shrink:0;
-  }
-  .rating-letter{font-family:var(--font-display);font-size:36px;font-weight:500;line-height:1}
-  .rating-label{font-size:9px;font-family:var(--font-mono);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;font-weight:500}
-  .stat-row{display:flex;gap:8px;flex-wrap:wrap}
-  .stat-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:400;border:1px solid}
-  .card-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:15px;font-weight:400;color:var(--fg)}
-  .cost-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .cost-box{background:var(--bg-light);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}
-  .cost-value{font-family:var(--font-display);font-size:clamp(28px,5vw,36px);font-weight:400;color:var(--fg);letter-spacing:-0.02em}
-  .detail-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-light);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--muted);font-family:var(--font-mono);letter-spacing:0.02em}
-  .card-footnote{font-size:11px;color:var(--muted);font-weight:300;margin-top:16px;line-height:1.6;font-style:italic}
-  .limiter-row{display:flex;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
-  .limiter-row:last-child{border-bottom:none;padding-bottom:0}
-  .limiter-icon{width:36px;height:36px;border-radius:10px;background:var(--bg-light);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0}
-  .mini-badge{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:22px;font-weight:500;border:2px solid;flex-shrink:0}
-  .suggestion-row{display:flex;gap:10px;align-items:flex-start;padding:6px 0}
-  .gov-card{display:flex;gap:16px;align-items:flex-start}
-  .gov-link{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);text-decoration:none;font-weight:400;font-family:var(--font-mono);letter-spacing:0.02em;transition:opacity 0.2s}
-  .gov-link:hover{opacity:0.7}
-  .cta-card{background:var(--bg-light);border:1px solid var(--border);text-align:center}
-  .cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--accent);color:var(--bg);border-radius:8px;text-decoration:none;font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.3s cubic-bezier(.22,1,.36,1)}
-  .cta-btn:hover{filter:brightness(1.06);transform:translateY(-1px);box-shadow:0 8px 24px rgba(228,208,72,0.15)}
-`;
