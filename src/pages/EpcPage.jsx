@@ -197,21 +197,19 @@ export default function EpcPage(){
             </Reveal>
             <Reveal delay={0.1}>
               <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                <div className="stat-card" style={{borderTop:"3px solid rgba(196,122,24,0.35)",position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:"radial-gradient(circle at top right, rgba(196,122,24,0.04) 0%, transparent 60%)",pointerEvents:"none"}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,position:"relative"}}><div className="icon-box" style={{background:"rgba(196,122,24,0.08)",border:"1px solid rgba(196,122,24,0.15)",width:48,height:48,borderRadius:14}}><Flame size={20} style={{color:"#C47A18"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. annual cost</span></div>
-                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(36px,5vw,50px)",fontWeight:300,letterSpacing:"-0.025em",position:"relative"}}>£<CountUp target={annual}/></div>
-                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:8,position:"relative"}}>Based on current energy prices</div>
+                <div className="stat-card">
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}><div className="icon-box" style={{background:"rgba(196,122,24,0.08)",border:"1px solid rgba(196,122,24,0.15)",width:48,height:48,borderRadius:14}}><Flame size={20} style={{color:"#C47A18"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. annual cost</span></div>
+                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(36px,5vw,50px)",fontWeight:300,letterSpacing:"-0.025em"}}>£<CountUp target={annual}/></div>
+                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:8}}>Based on current energy prices</div>
                 </div>
-                <div className="stat-card" style={{borderTop:"3px solid rgba(90,158,46,0.35)",position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:"radial-gradient(circle at top right, rgba(90,158,46,0.04) 0%, transparent 60%)",pointerEvents:"none"}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,position:"relative"}}><div className="icon-box" style={{background:"rgba(90,158,46,0.08)",border:"1px solid rgba(90,158,46,0.15)",width:48,height:48,borderRadius:14}}><Zap size={20} style={{color:"#5A9E2E"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. monthly cost</span></div>
-                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(36px,5vw,50px)",fontWeight:300,letterSpacing:"-0.025em",position:"relative"}}>£<CountUp target={monthly}/></div>
-                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:8,position:"relative"}}>Approximate monthly average</div>
+                <div className="stat-card">
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}><div className="icon-box" style={{background:"rgba(90,158,46,0.08)",border:"1px solid rgba(90,158,46,0.15)",width:48,height:48,borderRadius:14}}><Zap size={20} style={{color:"#5A9E2E"}}/></div><span className="mono" style={{color:"var(--muted)"}}>Est. monthly cost</span></div>
+                  <div style={{fontFamily:"var(--f-display)",fontSize:"clamp(36px,5vw,50px)",fontWeight:300,letterSpacing:"-0.025em"}}>£<CountUp target={monthly}/></div>
+                  <div style={{fontSize:12,color:"var(--muted)",fontWeight:300,marginTop:8}}>Approximate monthly average</div>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                  <div className="stat-card" style={{borderTop:"3px solid rgba(196,154,26,0.25)"}}><div className="icon-box" style={{background:"rgba(196,154,26,0.08)",border:"1px solid rgba(196,154,26,0.15)",marginBottom:14,width:48,height:48,borderRadius:14}}><Thermometer size={18} style={{color:"#C49A1A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:8}}>Heating</div><div style={{fontSize:16,fontWeight:400}}>{h.l}</div></div>
-                  <div className="stat-card" style={{borderTop:"3px solid rgba(90,122,138,0.25)"}}><div className="icon-box" style={{background:"rgba(90,122,138,0.08)",border:"1px solid rgba(90,122,138,0.15)",marginBottom:14,width:48,height:48,borderRadius:14}}><Home size={18} style={{color:"#5A7A8A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:8}}>Insulation</div><div style={{fontSize:16,fontWeight:400}}>{ins.l}</div></div>
+                  <div className="stat-card"><div className="icon-box" style={{background:"rgba(196,154,26,0.08)",border:"1px solid rgba(196,154,26,0.15)",marginBottom:14,width:48,height:48,borderRadius:14}}><Thermometer size={18} style={{color:"#C49A1A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:8}}>Heating</div><div style={{fontSize:16,fontWeight:400}}>{h.l}</div></div>
+                  <div className="stat-card"><div className="icon-box" style={{background:"rgba(90,122,138,0.08)",border:"1px solid rgba(90,122,138,0.15)",marginBottom:14,width:48,height:48,borderRadius:14}}><Home size={18} style={{color:"#5A7A8A"}}/></div><div className="mono" style={{color:"var(--muted)",marginBottom:8}}>Insulation</div><div style={{fontSize:16,fontWeight:400}}>{ins.l}</div></div>
                 </div>
                 {pr!==params.rating&&(
                   <div className="stat-card" style={{background:prD.bg,borderColor:prD.bdr}}>
@@ -276,9 +274,8 @@ export default function EpcPage(){
           <div className="review-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,alignItems:"stretch"}}>
             {/* GOV.UK */}
             <Reveal>
-              <div style={{background:"rgba(255,255,255,0.7)",backdropFilter:"blur(20px) saturate(1.2)",border:"1px solid rgba(255,255,255,0.6)",borderRadius:16,padding:"clamp(28px,3vw,36px)",height:"100%",display:"flex",flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)",borderTop:"3px solid rgba(27,138,58,0.25)",position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",top:0,left:0,width:"50%",height:"100%",background:"radial-gradient(circle at top left, rgba(27,138,58,0.03) 0%, transparent 50%)",pointerEvents:"none"}}/>
-                <div style={{position:"relative"}}>
+              <div style={{background:"rgba(255,255,255,0.7)",backdropFilter:"blur(20px) saturate(1.2)",border:"1px solid rgba(255,255,255,0.6)",borderRadius:16,padding:"clamp(28px,3vw,36px)",height:"100%",display:"flex",flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)"}}>
+                <div>
                   <div className="icon-box" style={{background:"rgba(27,138,58,0.08)",border:"1px solid rgba(27,138,58,0.15)",marginBottom:20,width:48,height:48,borderRadius:14}}><Shield size={20} style={{color:"#1B8A3A"}}/></div>
                   <h3 style={{fontFamily:"var(--f-display)",fontSize:19,fontWeight:400,letterSpacing:"-0.01em",marginBottom:10}}>Official EPC register</h3>
                   <p style={{fontSize:13,color:"var(--muted)",fontWeight:300,lineHeight:1.75,marginBottom:12}}>Your certificate will typically appear on the GOV.UK register within <strong style={{color:"var(--fg)",fontWeight:500}}>24 hours</strong> of lodgement.</p>
@@ -292,9 +289,8 @@ export default function EpcPage(){
             </Reveal>
             {/* Review */}
             <Reveal delay={0.08}>
-              <div style={{background:"rgba(255,255,255,0.7)",backdropFilter:"blur(20px) saturate(1.2)",border:"1px solid rgba(255,255,255,0.6)",borderRadius:16,padding:"clamp(28px,3vw,36px)",height:"100%",display:"flex",flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)",borderTop:"3px solid rgba(228,208,72,0.35)",position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",top:0,right:0,width:"50%",height:"100%",background:"radial-gradient(circle at top right, rgba(228,208,72,0.04) 0%, transparent 50%)",pointerEvents:"none"}}/>
-                <div style={{position:"relative"}}>
+              <div style={{background:"rgba(255,255,255,0.7)",backdropFilter:"blur(20px) saturate(1.2)",border:"1px solid rgba(255,255,255,0.6)",borderRadius:16,padding:"clamp(28px,3vw,36px)",height:"100%",display:"flex",flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 8px 24px rgba(0,0,0,0.02)"}}>
+                <div>
                   <div style={{display:"flex",gap:4,marginBottom:20}}>
                     {[1,2,3,4,5].map(i=><Star key={i} size={20} fill="#E4D048" color="#D4C038" strokeWidth={1.5}/>)}
                   </div>
