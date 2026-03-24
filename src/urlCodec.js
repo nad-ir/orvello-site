@@ -34,11 +34,12 @@ export function decodePayload(str) {
  * Plain params: rating, heating, insulation
  * Encoded payload (d=): ref, addr
  */
-export function buildEpcUrl(base, { rating, heating, insulation, ref, addr }) {
+export function buildEpcUrl(base, { rating, heating, insulation, bedrooms, ref, addr }) {
   const payload = encodePayload({ ref, addr });
   let url = `${base}/epc?rating=${encodeURIComponent(rating)}`;
   url += `&heating=${encodeURIComponent(heating)}`;
   url += `&insulation=${encodeURIComponent(insulation)}`;
+  if (bedrooms) url += `&bedrooms=${bedrooms}`;
   url += `&d=${payload}`;
   return url;
 }
@@ -48,6 +49,7 @@ export function parseEpcUrl() {
   const rating = (p.get("rating") || "").toUpperCase();
   const heating = p.get("heating") || "gas";
   const insulation = p.get("insulation") || "average";
+  const bedrooms = parseInt(p.get("bedrooms") || "3", 10);
   const d = p.get("d");
   let ref = "", addr = "";
   if (d) {
@@ -60,7 +62,7 @@ export function parseEpcUrl() {
   // Fallback: check plain params for backwards compat
   if (!ref) ref = p.get("ref") || "";
   if (!addr) addr = p.get("addr") || "";
-  return { rating, heating, insulation, ref, addr };
+  return { rating, heating, insulation, bedrooms, ref, addr };
 }
 
 /**
