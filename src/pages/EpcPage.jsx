@@ -1,36 +1,124 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { ExternalLink, TrendingUp, Flame, Thermometer, Zap, Home, ArrowRight, Lightbulb, Shield, Wrench, Star, ChevronDown, Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import { parseEpcUrl } from "../urlCodec";
 
 /* ═══ DATA ═══ */
 const R={
-  A:{c:"#1B8A3A",bg:"#E8F5EC",bdr:"#B8E0C4",score:"92–100",label:"Exceptional",pos:"the top 2%",mult:0.45,idx:0},
-  B:{c:"#2D8E3B",bg:"#EAF6EB",bdr:"#BDE4C5",score:"81–91",label:"Very efficient",pos:"the top 15%",mult:0.6,idx:1},
-  C:{c:"#5A9E2E",bg:"#F0F6E6",bdr:"#D4E8B8",score:"69–80",label:"Above average",pos:"the top 40%",mult:0.75,idx:2},
-  D:{c:"#C49A1A",bg:"#FDF6E3",bdr:"#F0DFA0",score:"55–68",label:"Average",pos:"the median",mult:1.0,idx:3},
-  E:{c:"#C47A18",bg:"#FEF0E0",bdr:"#F0CFA0",score:"39–54",label:"Below average",pos:"the bottom 35%",mult:1.3,idx:4},
-  F:{c:"#B85A1A",bg:"#FDECE0",bdr:"#F0B8A0",score:"21–38",label:"Poor",pos:"the bottom 15%",mult:1.65,idx:5},
-  G:{c:"#A83030",bg:"#FDE8E8",bdr:"#F0A8A8",score:"1–20",label:"Very poor",pos:"the bottom 5%",mult:2.1,idx:6},
+  A:{c:"#1B8A3A",bg:"#E8F5EC",bdr:"#B8E0C4",score:"92–100",label:"Exceptional",pos:"the top 1%",pctl:"Top 1% of homes",idx:0},
+  B:{c:"#2D8E3B",bg:"#EAF6EB",bdr:"#BDE4C5",score:"81–91",label:"Very efficient",pos:"the top 10%",pctl:"Better than 90% of homes",idx:1},
+  C:{c:"#5A9E2E",bg:"#F0F6E6",bdr:"#D4E8B8",score:"69–80",label:"Above average",pos:"the top 40%",pctl:"Better than 60% of homes",idx:2},
+  D:{c:"#C49A1A",bg:"#FDF6E3",bdr:"#F0DFA0",score:"55–68",label:"Average",pos:"the median",pctl:"Better than 30% of homes",idx:3},
+  E:{c:"#C47A18",bg:"#FEF0E0",bdr:"#F0CFA0",score:"39–54",label:"Below average",pos:"the bottom 35%",pctl:"Bottom 15% of homes",idx:4},
+  F:{c:"#B85A1A",bg:"#FDECE0",bdr:"#F0B8A0",score:"21–38",label:"Poor",pos:"the bottom 15%",pctl:"Bottom 5% of homes",idx:5},
+  G:{c:"#A83030",bg:"#FDE8E8",bdr:"#F0A8A8",score:"1–20",label:"Very poor",pos:"the bottom 5%",pctl:"Least efficient homes",idx:6},
 };
-const HEAT={gas:{l:"Gas central heating",base:1200},electric:{l:"Electric heating",base:1800},oil:{l:"Oil boiler",base:1400},lpg:{l:"LPG boiler",base:1500},heatpump:{l:"Heat pump",base:750},other:{l:"Other",base:1300}};
-const INS={good:{l:"Good",f:0.9},average:{l:"Average",f:1.0},poor:{l:"Poor",f:1.25}};
 
-function engine(rating,heating,insulation){
-  const r=R[rating],h=HEAT[heating]||HEAT.gas,ins=INS[insulation]||INS.average;
-  const annual=Math.round(h.base*r.mult*ins.f),monthly=Math.round(annual/12);
-  const bands="ABCDEFG",ci=bands.indexOf(rating),pi=Math.max(0,ci-2),pr=bands[pi],prD=R[pr];
-  const potA=Math.round(h.base*prD.mult*0.9),savings=annual-potA;
-  const recs=[];
-  if(insulation!=="good"){recs.push({t:"Improve insulation",d:"Top up loft insulation to 270mm — one of the most cost-effective improvements",s:"£100–£300/yr",e:"low",icon:"thermo"});if(insulation==="poor")recs.push({t:"Wall insulation",d:"Cavity or external wall insulation to reduce heat loss through walls",s:"£200–£500/yr",e:"high",icon:"home"});}
-  if(ci>=2)recs.push({t:"LED lighting",d:"Replace all remaining halogen and CFL bulbs with LEDs",s:"£40–£80/yr",e:"low",icon:"bulb"});
-  if(ci>=3)recs.push({t:"Glazing upgrade",d:"Install double or triple glazing where single-glazed windows remain",s:"£100–£300/yr",e:"high",icon:"home"});
-  if(heating==="electric"||heating==="oil"||heating==="lpg")recs.push({t:"Heating upgrade",d:"Consider switching to a heat pump or modern condensing boiler",s:"£300–£800/yr",e:"high",icon:"flame"});
-  if(ci>=2)recs.push({t:"Smart controls",d:"Install a smart thermostat and thermostatic radiator valves",s:"£60–£150/yr",e:"low",icon:"zap"});
-  if(ci>=4)recs.push({t:"Solar PV",d:"Generate your own electricity and reduce reliance on the grid",s:"£200–£500/yr",e:"high",icon:"zap"});
-  return{r,h,ins,annual,monthly,pr,prD,savings,recs};
+const HEAT_LABELS={gas:"Gas central heating",electric:"Electric heating",oil:"Oil boiler",lpg:"LPG boiler",heatpump:"Heat pump",other:"Other"};
+const INS_LABELS={good:"Good",average:"Average",poor:"Poor"};
+
+const BASE_COST={A:600,B:800,C:1100,D:1400,E:1800,F:2200,G:2600};
+const IMPROVE_MAP={G:"E",F:"D",E:"C",D:"B",C:"A",B:"A",A:"A"};
+
+function engine(rating, heating, insulation, bedrooms=3) {
+  const r = R[rating];
+
+  // ─── Factor scoring system ───
+  let yearly = BASE_COST[rating];
+  const factors = [];
+
+  function addFactor(name, impact, saving, message, action, icon, effort) {
+    factors.push({ name, impact, saving, message, action, icon, effort });
+  }
+
+  // Heating factors
+  if (heating === "electric") {
+    yearly += 200;
+    addFactor("Heating", 9, 300, "Electric heating significantly increases running costs", "Upgrade to a heat pump or efficient central heating system", "flame", "high");
+  } else if (heating === "gas") {
+    addFactor("Heating", 5, 150, "Older gas systems may be less efficient than modern alternatives", "Upgrade to a modern condensing boiler", "flame", "high");
+  } else if (heating === "oil") {
+    yearly += 100;
+    addFactor("Heating", 7, 250, "Oil heating has higher running costs and carbon output", "Consider switching to a heat pump or gas", "flame", "high");
+  } else if (heating === "lpg") {
+    yearly += 80;
+    addFactor("Heating", 6, 200, "LPG has moderate running costs", "Consider switching to mains gas or a heat pump", "flame", "high");
+  } else if (heating === "heatpump") {
+    yearly -= 150;
+  }
+
+  // Insulation factors
+  if (insulation === "poor") {
+    yearly += 150;
+    addFactor("Insulation", 10, 400, "Poor insulation is causing major heat loss through walls, roof, and floors", "Install loft and cavity wall insulation", "thermo", "high");
+  } else if (insulation === "average") {
+    addFactor("Insulation", 6, 200, "Moderate insulation — some areas could be improved for better heat retention", "Top up loft insulation to 270mm", "thermo", "low");
+  }
+
+  // Property size factors
+  if (bedrooms >= 4) {
+    yearly += 200;
+    addFactor("Property Size", 4, 0, "Larger homes naturally require more energy to heat and maintain", null, "home", null);
+  }
+  if (bedrooms >= 5) yearly += 150;
+
+  // Universal improvement factors
+  addFactor("Lighting", 3, 80, "Lighting can be made more efficient with modern LEDs", "Switch to LED lighting throughout", "bulb", "low");
+  addFactor("Controls", 4, 120, "Heating usage may not be optimised without smart controls", "Install a smart thermostat and TRVs", "zap", "low");
+  addFactor("Windows", 5, 150, "Heat may be lost through inefficient glazing", "Upgrade to double or triple glazing", "home", "high");
+
+  if (rating >= "D") {
+    addFactor("Renewables", 6, 250, "Electricity costs could be offset by generating your own", "Install solar PV panels", "zap", "high");
+  }
+
+  // Sort by impact (highest first)
+  factors.sort((a, b) => b.impact - a.impact);
+
+  // Top recommendations (those with actions, top 4)
+  const recs = factors.filter(f => f.action).slice(0, 4).map(f => ({
+    t: f.action,
+    d: f.message,
+    s: f.saving > 0 ? `~£${f.saving}/yr` : "—",
+    e: f.effort || "low",
+    icon: f.icon,
+    impact: f.impact,
+  }));
+
+  // Top 2 blockers (highest impact factors)
+  const blockers = factors.slice(0, 2).map(f => f.message);
+
+  // Costs
+  const monthly = Math.round(yearly / 12);
+
+  // Potential improvement
+  const pr = IMPROVE_MAP[rating] || rating;
+  const prD = R[pr];
+  const improvedCost = BASE_COST[pr];
+  const savings = Math.max(0, yearly - improvedCost);
+
+  // Dynamic summary
+  let summary;
+  if (rating === "A" || rating === "B") {
+    summary = "Your property performs very efficiently and is cheaper to run than most homes in the UK.";
+  } else if (rating === "C") {
+    summary = "Your property is around average energy efficiency. A few targeted improvements could push it higher.";
+  } else if (rating === "D") {
+    summary = "Your property is typical for UK housing stock. There's meaningful room for improvement.";
+  } else {
+    summary = "Your property is less efficient than average and likely has higher running costs. Improvements would make a significant difference.";
+  }
+
+  return {
+    r, 
+    h: { l: HEAT_LABELS[heating] || "Other" }, 
+    ins: { l: INS_LABELS[insulation] || "Average" },
+    annual: yearly, monthly, pr, prD, savings, recs, blockers, summary,
+    percentile: r.pctl,
+    bedrooms,
+  };
 }
 
-function parseParams(){const p=new URLSearchParams(window.location.search);const rating=(p.get("rating")||"").toUpperCase();if(!R[rating])return null;return{rating,heating:p.get("heating")||"gas",insulation:p.get("insulation")||"average",ref:p.get("ref")||"",addr:p.get("addr")||""};}
+function parseParams(){const p=parseEpcUrl();if(!R[p.rating])return null;return p;}
 
 function useInView(t=0.1){const ref=useRef(null);const[v,setV]=useState(false);useEffect(()=>{const el=ref.current;if(!el)return;const o=new IntersectionObserver(([e])=>{if(e.isIntersecting){setV(true);o.unobserve(el)}},{threshold:t});o.observe(el);return()=>o.disconnect()},[t]);return[ref,v];}
 function Reveal({children,delay=0,style={}}){const[ref,v]=useInView();return<div ref={ref} style={{...style,opacity:v?1:0,transform:v?"translateY(0)":"translateY(20px)",transition:`opacity 0.7s cubic-bezier(.22,1,.36,1) ${delay}s, transform 0.7s cubic-bezier(.22,1,.36,1) ${delay}s`}}>{children}</div>;}
@@ -99,7 +187,7 @@ function RecCard({rec,effort}){
 /* ═══ MAIN ═══ */
 export default function EpcPage(){
   const params=useMemo(()=>parseParams(),[]);
-  const data=useMemo(()=>params?engine(params.rating,params.heating,params.insulation):null,[params]);
+  const data=useMemo(()=>params?engine(params.rating,params.heating,params.insulation,params.bedrooms):null,[params]);
   const[scrolled,setScrolled]=useState(false);
   const[reviewDone,setReviewDone]=useState(false);
   useEffect(()=>{const fn=()=>setScrolled(window.scrollY>40);window.addEventListener("scroll",fn);return()=>window.removeEventListener("scroll",fn);},[]);
@@ -114,7 +202,7 @@ export default function EpcPage(){
     </div>
   );
 
-  const{r,h,ins,annual,monthly,pr,prD,savings,recs}=data;
+  const{r,h,ins,annual,monthly,pr,prD,savings,recs,blockers,summary,percentile}=data;
   const addr=params.addr||"Property address not specified";
 
   return(
@@ -232,8 +320,19 @@ export default function EpcPage(){
             </Reveal>
             <Reveal delay={0.08}>
               <div style={{fontSize:16,lineHeight:1.9,color:"var(--muted)",fontWeight:300}}>
-                <p style={{marginBottom:20}}>Your property has been assessed with an EPC rating of <strong style={{color:r.c,fontWeight:500}}>{params.rating}</strong>, placing it in <strong style={{color:"var(--fg)",fontWeight:500}}>{r.pos}</strong> of UK homes for energy efficiency.</p>
-                <p style={{marginBottom:20}}>Based on your {h.l.toLowerCase()} and {ins.l.toLowerCase()} insulation, estimated annual energy costs are around <strong style={{color:"var(--fg)",fontWeight:500}}>£{annual.toLocaleString()}</strong> (approximately £{monthly}/month). These figures are estimates based on typical usage and current energy tariffs.</p>
+                <p style={{marginBottom:20}}>{summary}</p>
+                <p style={{marginBottom:20}}>Your property has been assessed at rating <strong style={{color:r.c,fontWeight:500}}>{params.rating}</strong> — <strong style={{color:"var(--fg)",fontWeight:500}}>{percentile.toLowerCase()}</strong>. Based on your {h.l.toLowerCase()} and {ins.l.toLowerCase()} insulation, estimated annual energy costs are around <strong style={{color:"var(--fg)",fontWeight:500}}>£{annual.toLocaleString()}</strong> (approximately £{monthly}/month).</p>
+                {blockers.length>0&&(
+                  <div style={{background:"rgba(196,122,24,0.04)",border:"1px solid rgba(196,122,24,0.1)",borderRadius:10,padding:"16px 20px",marginBottom:20}}>
+                    <div className="mono" style={{color:"#C47A18",marginBottom:10,fontSize:9}}>Key limiting factors</div>
+                    {blockers.map((b,i)=>(
+                      <div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",marginBottom:i<blockers.length-1?8:0}}>
+                        <span style={{color:"#C47A18",fontSize:14,lineHeight:"1.7",flexShrink:0}}>·</span>
+                        <span style={{fontSize:14,color:"var(--muted)",fontWeight:300,lineHeight:1.7}}>{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {pr!==params.rating&&<p>With targeted improvements, your property could achieve a rating of <strong style={{color:prD.c,fontWeight:500}}>{pr}</strong>, potentially saving up to <strong style={{color:"var(--fg)",fontWeight:500}}>£{savings} per year</strong> on energy bills.</p>}
               </div>
             </Reveal>
